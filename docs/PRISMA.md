@@ -18,6 +18,8 @@ Inscrições, pagamentos simulados, edição concorrente de eventos, publicaçã
 
 `prisma/schema.prisma` foi obtido por introspecção das 11 tabelas existentes. Os nomes, tipos, índices, relações e nulabilidade foram preservados. O cliente tipado é gerado em `server/generated/prisma` e não é enviado ao GitHub: `npm run build` o gera novamente antes de compilar.
 
+O gerador usa `importFileExtension = "js"` para que os imports internos funcionem após a compilação TypeScript das funções na Vercel.
+
 A migração `prisma/migrations/0_initial/migration.sql` representa o estado inicial e inclui explicitamente as sete constraints `CHECK` que o datamodel Prisma não representa integralmente. As regras continuam sendo impostas pelo PostgreSQL. Revise essas constraints quando alterar os campos relacionados.
 
 Nos bancos local e Neon existentes, a migração inicial foi marcada como aplicada (`migrate resolve`), sem recriar tabelas. Foram comparados esquema, constraints e registros antes/depois. Backups privados da verificação estão em `.local`, fora do Git e da publicação.
@@ -48,6 +50,8 @@ Para a CLI, `prisma.config.ts` prioriza `DATABASE_URL_UNPOOLED` quando disponív
 ## Verificação
 
 A migração foi aplicada a um banco temporário vazio, comparada com o datamodel e reaplicada sem mudanças pendentes. As sete constraints foram conferidas. Os testes de integração cobrem login, permissões, unicidade, registros ausentes, concorrência pela última vaga, pagamento/cancelamento, chatbot, cookies e limite distribuído.
+
+Nesta entrega passaram nove testes locais e 18 verificações HTTP na implantação da Vercel. Após a promoção, foram confirmados novamente o health, o login `admin` e a listagem de eventos no domínio público. A implantação com Prisma é `IMPLANTACAO_PRIVADA`, publicada em https://comunia-theta.vercel.app. As contas e dados temporários dos testes foram removidos.
 
 Foram fixadas versões corrigidas das dependências transitivas `deepmerge-ts` e `mysql2` por overrides. A configuração Prisma, a geração do cliente e as migrações foram testadas com essas versões. A auditoria de dependências de produção não reportou vulnerabilidades nesta revisão; continuam os avisos já conhecidos da cadeia de desenvolvimento Metro.
 

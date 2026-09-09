@@ -46,7 +46,7 @@ try {
   request('/api/auth/login', 'POST', {}, 403, 'https://attacker.example');
   request('/api/auth/login', 'POST', { email: 'admin@comunia.local', password: 'Comunia@123' }, 401);
   const secrets = readFileSync('.local/ACESSOS-ONLINE.md', 'utf8');
-  const adminPassword = secrets.match(/admin: admin@comunia\.local\s+Senha: (\S+)/)?.[1];
+  const adminPassword = secrets.match(/admin: (?:admin@comunia\.local|admin)\s+Senha: (\S+)/)?.[1];
   assert.ok(adminPassword);
   const login = request('/api/auth/login', 'POST', { email: 'admin', password: adminPassword });
   assert.match(login.headers, /; Secure/i);
