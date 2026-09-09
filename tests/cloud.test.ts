@@ -7,7 +7,7 @@ process.env.VERCEL_URL = 'comunia-preview.example';
 process.env.VERCEL_PROJECT_PRODUCTION_URL = 'comunia.example';
 process.env.APP_ORIGINS = 'https://comunidade.example';
 const { app } = await import('../server/app.js');
-const { pool, query } = await import('../server/db.js');
+const { disconnectDatabase, query } = await import('../server/db.js');
 const { consumeAttempt } = await import('../server/rate-limit.js');
 const { allowedOrigins } = await import('../server/runtime.js');
 const server = app.listen(0, '127.0.0.1');
@@ -15,7 +15,7 @@ await new Promise<void>((resolve) => server.on('listening', resolve));
 const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 after(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
-  await pool.end();
+  await disconnectDatabase();
 });
 
 test('nuvem aceita apenas origens exatas e não libera localhost', async () => {

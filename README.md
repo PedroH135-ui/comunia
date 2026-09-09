@@ -1,6 +1,6 @@
 # ComunIA · V1 local
 
-Aplicativo de demonstração do TCC **ComunIA — Aplicativo Inteligente de Atendimento para Comunidades Religiosas**. Interface responsiva em React Native para Web, API Node.js/TypeScript e banco PostgreSQL 16 persistente. Comunidade, endereços e eventos de exemplo são fictícios.
+Aplicativo de demonstração do TCC **ComunIA — Aplicativo Inteligente de Atendimento para Comunidades Religiosas**. Interface responsiva em React Native para Web, API Node.js/TypeScript e banco PostgreSQL persistente. Comunidade, endereços e eventos de exemplo são fictícios.
 
 ## Versão online
 
@@ -58,6 +58,10 @@ A interface inclui agenda em lista ou cartões, acesso à próxima inscrição, 
 8. Volte ao membro e confira as notificações e o evento criado.
 9. Recarregue a página: as informações continuam no PostgreSQL.
 
+## Acesso ao banco com Prisma
+
+Prisma ORM 7.10 já integra as consultas e as migrações do PostgreSQL. Execute npm run db:studio para abrir a ferramenta local de administração do banco. Consulte [docs/PRISMA.md](docs/PRISMA.md) para os comandos, a adoção sem perda de dados e as operações que preservam SQL transacional.
+
 ## Banco e armazenamento
 
 A instalação de PostgreSQL já existente é reutilizada, mas o ComunIA usa **uma instância separada**, sem alterar o serviço ou os bancos anteriores.
@@ -66,7 +70,7 @@ A instalação de PostgreSQL já existente é reutilizada, mas o ComunIA usa **u
 - Dados locais: `E:/ComunIA/postgres-data`.
 - Log: `E:/ComunIA/postgres.log`.
 - Cache npm: `E:/ComunIA/npm-cache`.
-- Dependências: `E:/ComunIA/dependencies/v1-2/node_modules`, ligadas à pasta do projeto por uma junção de diretório do Windows.
+- Dependências: `E:/ComunIA/dependencies/v1-4/node_modules`, ligadas à pasta do projeto por uma junção de diretório do Windows.
 - Credencial aleatória do banco em `.env`, ignorado pelo Git. Não compartilhe esse arquivo.
 - Autenticação do banco com SCRAM e acesso somente por `127.0.0.1`.
 

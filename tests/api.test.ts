@@ -1,7 +1,7 @@
 import { test, after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { app } from '../server/app.js';
-import { pool, query } from '../server/db.js';
+import { disconnectDatabase, query } from '../server/db.js';
 const server = app.listen(0, '127.0.0.1');
 const address = await new Promise<string>((resolve) =>
   server.on('listening', () => resolve(`http://127.0.0.1:${(server.address() as any).port}/api`)),
@@ -61,7 +61,7 @@ after(async () => {
   await query("DELETE FROM notifications WHERE body LIKE 'QA isolado %'");
   if (adminCookie) await request('/auth/logout', 'POST', {}, adminCookie);
   await new Promise<void>((resolve) => server.close(() => resolve()));
-  await pool.end();
+  await disconnectDatabase();
 });
 test('autenticação e permissões protegem dados e administração', async () => {
   assert.equal((await request('/events')).status, 401);
@@ -110,6 +110,29 @@ test('admin aceita usuário curto sem enfraquecer a validação de novos cadastr
     ).status,
     400,
   );
+});
+
+test('Prisma mantém respostas HTTP para duplicidade e registros ausentes', async () => {
+  const duplicate = await request('/auth/register', 'POST', {
+    name: 'Duplicado',
+    email: 'admin@comunia.local',
+    password: 'Teste@12345',
+  });
+  assert.equal(duplicate.status, 409);
+  const missing = await request(
+    '/admin/knowledge/2147483647',
+    'PUT',
+    {
+      title: 'Conteúdo ausente',
+      keywords: 'ausente',
+      answer: 'Resposta de teste ausente.',
+    },
+    adminCookie,
+  );
+  assert.equal(missing.status, 404);
+  const me = await request('/auth/me', 'GET', undefined, adminCookie);
+  assert.equal(me.status, 200);
+  assert.equal('password_hash' in me.data, false);
 });
 test('evento, disputa de última vaga, pagamento, isolamento e cancelamento', async () => {
   const event = {

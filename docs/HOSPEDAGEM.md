@@ -38,7 +38,7 @@ O deploy foi realizado pela CLI. Publicação automática por Git ainda não est
 - Controle de login compartilhado no PostgreSQL, com expiração de 10 minutos, e limite também no cadastro.
 - Notificações online consultadas a cada 60 segundos apenas com a aba visível, para reduzir consumo.
 - `.env`, `.local`, backups, senhas e scripts de migração ficam fora do deploy.
-- `npm run db:migrate` aplica o esquema e limpa sessões/limites expirados; confira sempre qual `DATABASE_URL` está configurada antes de executar.
+- `npm run db:migrate` aplica o histórico Prisma; `npm run db:cleanup` limpa sessões/limites expirados; confira sempre qual `DATABASE_URL` está configurada antes de executar.
 
 ## Custos e limites
 
@@ -57,3 +57,5 @@ Referências: [Vercel Functions](https://vercel.com/docs/functions/quickstart), 
 - Conta temporária de teste e registros associados removidos após a validação.
 - Domínio público validado sem sessão da Vercel: página inicial e health 200, login e logout 200.
 - Auditoria das dependências de produção sem vulnerabilidades reportadas nesta verificação. A árvore de desenvolvimento apresenta avisos em dependências transitivas do Metro; Metro não é utilizado para servir nem compilar esta versão web com Vite.
+
+Acesso ao banco atualizado para Prisma ORM 7.10, com baseline registrada na Neon e no banco local. Consulte [PRISMA.md](PRISMA.md).
