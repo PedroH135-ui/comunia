@@ -35,7 +35,7 @@ test('cookie de sessão publicado exige HTTPS e logout invalida a sessão', asyn
   const response = await fetch(base + '/api/auth/login', {
     method: 'POST',
     headers: { Origin: 'https://comunia.example', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'admin@comunia.local', password: 'Comunia@123' }),
+    body: JSON.stringify({ email: 'admin', password: 'admin' }),
   });
   assert.equal(response.status, 200);
   const cookie = response.headers.get('set-cookie') || '';

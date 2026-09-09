@@ -26,8 +26,8 @@ async function request(path: string, method = 'GET', body?: unknown, cookie = ''
 }
 before(async () => {
   const login = await request('/auth/login', 'POST', {
-    email: 'admin@comunia.local',
-    password: 'Comunia@123',
+    email: 'admin',
+    password: 'admin',
   });
   assert.equal(login.status, 200);
   adminCookie = login.cookie;
@@ -74,6 +74,40 @@ test('autenticação e permissões protegem dados e administração', async () =
   assert.equal(
     (await request('/auth/register', 'POST', { name: 'X', email: 'invalid', password: '123' }))
       .status,
+    400,
+  );
+});
+
+test('admin aceita usuário curto sem enfraquecer a validação de novos cadastros', async () => {
+  assert.equal(
+    (await request('/auth/login', 'POST', { email: 'admin', password: 'xxxxx' })).status,
+    401,
+  );
+  const login = await request('/auth/login', 'POST', {
+    email: 'admin@comunia.local',
+    password: 'admin',
+  });
+  assert.equal(login.status, 200);
+  assert.equal(login.data.role, 'admin');
+  await request('/auth/logout', 'POST', {}, login.cookie);
+  assert.equal(
+    (
+      await request('/auth/register', 'POST', {
+        name: 'Teste',
+        email: 'short@comunia.local',
+        password: 'admin',
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await request('/auth/register', 'POST', {
+        name: 'Teste',
+        email: 'admin',
+        password: 'SenhaLonga123',
+      })
+    ).status,
     400,
   );
 });
