@@ -261,7 +261,9 @@ export default function App() {
     [toast, setToast] = useState(''),
     [error, setError] = useState(''),
     [loading, setLoading] = useState(false),
-    [menu, setMenu] = useState(false);
+    [menu, setMenu] = useState(false),
+    [showLogin, setShowLogin] = useState(false),
+    [pendingEvent, setPendingEvent] = useState<Event | null>(null);
   useEffect(() => {
     if (!modal) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -309,16 +311,25 @@ export default function App() {
   const refresh = async () => {
     setLoading(true);
     try {
-      const [e, r, n, a] = await Promise.all([
-        api<Event[]>('/events'),
-        api<Registration[]>('/registrations'),
-        api<Notice[]>('/notices'),
-        api<Notification[]>('/notifications'),
+      const [e, n] = await Promise.all([
+        api<Event[]>(user ? '/events' : '/public/events'),
+        api<Notice[]>(user ? '/notices' : '/public/notices'),
       ]);
+      const [r, a] = user
+        ? await Promise.all([
+            api<Registration[]>('/registrations'),
+            api<Notification[]>('/notifications'),
+          ])
+        : [[], []];
       setEvents(e);
       setRegistrations(r);
       setNotices(n);
       setNotifications(a);
+      if (user && pendingEvent) {
+        setPage('events');
+        inspect(pendingEvent, r, user);
+        setPendingEvent(null);
+      }
       setError('');
     } catch (e) {
       setError((e as Error).message);
@@ -333,8 +344,8 @@ export default function App() {
       .finally(() => setBoot(false));
   }, []);
   useEffect(() => {
-    if (user) void refresh();
-  }, [user]);
+    if (!boot) void refresh();
+  }, [user, boot]);
   useEffect(() => {
     if (!user) return;
     const timer = setInterval(
@@ -367,7 +378,11 @@ export default function App() {
       notify((e as Error).message);
     }
   };
-  const inspect = (event: Event) =>
+  function inspect(
+    event: Event,
+    currentRegistrations = registrations,
+    currentUser: User | null = user,
+  ) {
     setModal(
       <EventDetail
         event={event}
@@ -375,11 +390,17 @@ export default function App() {
           setModal(null);
           go('registrations');
         }}
-        registration={registrations.find(
+        registration={currentRegistrations.find(
           (r) => r.event_id === event.id && r.status !== 'cancelled',
         )}
         close={() => setModal(null)}
         register={async () => {
+          if (!currentUser) {
+            setPendingEvent(event);
+            setModal(null);
+            setShowLogin(true);
+            return;
+          }
           const r = await post<Registration>(`/events/${event.id}/register`);
           await refresh();
           setModal(null);
@@ -390,8 +411,10 @@ export default function App() {
               : 'Inscrição confirmada. Esperamos você!',
           );
         }}
+        requiresLogin={!currentUser}
       />,
     );
+  }
   const unread = notifications.filter((n) => !n.read).length;
   if (boot)
     return (
@@ -401,7 +424,22 @@ export default function App() {
         <T className="muted">Preparando seu espaço…</T>
       </Box>
     );
-  if (!user) return <Login onLogin={setUser} />;
+  if (showLogin)
+    return (
+      <Login
+        onBack={() => {
+          setShowLogin(false);
+          setPendingEvent(null);
+        }}
+        onLogin={(account) => {
+          setUser(account);
+          setShowLogin(false);
+        }}
+      />
+    );
+  const visibleNav = user
+    ? navItems
+    : navItems.filter((item) => ['home', 'events', 'chat'].includes(item.id));
   const titles: Record<string, string> = {
     home: 'Seu espaço na comunidade',
     events: 'Agenda da comunidade',
@@ -425,9 +463,9 @@ export default function App() {
             <T className="tiny muted">Um lugar para pertencer</T>
           </Box>
         </Box>
-        <T className="nav-caption">MINHA COMUNIDADE</T>
+        <T className="nav-caption">{user ? 'MINHA COMUNIDADE' : 'CONHEÇA A COMUNIDADE'}</T>
         <nav>
-          {navItems.map((n) => (
+          {visibleNav.map((n) => (
             <Button
               key={n.id}
               variant={`nav-item ${page === n.id ? 'active' : ''}`}
@@ -438,7 +476,7 @@ export default function App() {
             </Button>
           ))}
         </nav>
-        {user.role === 'admin' && (
+        {user?.role === 'admin' && (
           <>
             <T className="nav-caption admin-caption">GESTÃO</T>
             <Button
@@ -467,6 +505,11 @@ export default function App() {
             <span />
             <T>Ambiente de demonstração</T>
           </Box>
+          {!user && (
+            <Button variant="secondary guest-sidebar-login" onClick={() => setShowLogin(true)}>
+              Entrar ou criar conta <ArrowRight size={16} />
+            </Button>
+          )}
         </Box>
       </aside>
       <Box className="workspace">
@@ -486,7 +529,7 @@ export default function App() {
                   ? 'Administração'
                   : page === 'notifications'
                     ? 'Notificações'
-                    : navItems.find((n) => n.id === page)?.label}
+                    : visibleNav.find((n) => n.id === page)?.label}
               </T>
             </T>
           </Box>
@@ -494,27 +537,35 @@ export default function App() {
             <Badge kind="outline desktop-only">
               {cloudDeployment ? 'V1 · DEMONSTRAÇÃO' : 'V1 · LOCAL'}
             </Badge>
-            <Button
-              variant={`icon-button notification-button ${page === 'notifications' ? 'selected' : ''}`}
-              onClick={() => go('notifications')}
-              label={`Notificações, ${unread} não lidas`}
-            >
-              <Bell size={20} />
-              {unread > 0 && <span className="notification-dot" />}
-            </Button>
-            <span className="topbar-divider" />
-            <Box className="row profile">
-              <Box className="avatar">{user.name.slice(0, 1)}</Box>
-              <Box className="desktop-only">
-                <T className="profile-name">{user.name}</T>
-                <T className="tiny muted">
-                  {user.role === 'admin' ? 'Administrador' : 'Membro da comunidade'}
-                </T>
-              </Box>
-            </Box>
-            <Button variant="icon-button" onClick={logout} label="Sair da conta">
-              <LogOut size={17} />
-            </Button>
+            {user ? (
+              <>
+                <Button
+                  variant={`icon-button notification-button ${page === 'notifications' ? 'selected' : ''}`}
+                  onClick={() => go('notifications')}
+                  label={`Notificações, ${unread} não lidas`}
+                >
+                  <Bell size={20} />
+                  {unread > 0 && <span className="notification-dot" />}
+                </Button>
+                <span className="topbar-divider" />
+                <Box className="row profile">
+                  <Box className="avatar">{user.name.slice(0, 1)}</Box>
+                  <Box className="desktop-only">
+                    <T className="profile-name">{user.name}</T>
+                    <T className="tiny muted">
+                      {user.role === 'admin' ? 'Administrador' : 'Membro da comunidade'}
+                    </T>
+                  </Box>
+                </Box>
+                <Button variant="icon-button" onClick={logout} label="Sair da conta">
+                  <LogOut size={17} />
+                </Button>
+              </>
+            ) : (
+              <Button variant="guest-login" onClick={() => setShowLogin(true)}>
+                Entrar <ArrowRight size={16} />
+              </Button>
+            )}
           </Box>
         </header>
         <main className={`main-content ${page === 'chat' ? 'chat-main' : ''}`}>
@@ -522,13 +573,19 @@ export default function App() {
             <Box>
               <T className="eyebrow">
                 {page === 'home'
-                  ? 'SEU PAINEL'
+                  ? user
+                    ? 'SEU PAINEL'
+                    : 'PORTAS ABERTAS'
                   : page === 'admin'
                     ? 'PAINEL DA COMUNIDADE'
                     : 'COMUNIDADE HORIZONTE'}
               </T>
               <T accessibilityRole="header" className="page-title">
-                {page === 'home' ? `Olá, ${user.name.split(' ')[0]}.` : titles[page]}
+                {page === 'home'
+                  ? user
+                    ? `Olá, ${user.name.split(' ')[0]}.`
+                    : 'Bem-vindo à Comunidade Horizonte.'
+                  : titles[page]}
                 {page === 'home' && (
                   <span className="hello-sun">
                     <Sun size={28} />
@@ -537,7 +594,9 @@ export default function App() {
               </T>
               <T className="page-subtitle">
                 {page === 'home'
-                  ? 'Confira a agenda e acompanhe suas inscrições.'
+                  ? user
+                    ? 'Confira a agenda e acompanhe suas inscrições.'
+                    : 'Conheça nossos encontros e encontre seu lugar na comunidade.'
                   : page === 'events'
                     ? 'Há sempre um novo jeito de participar e compartilhar.'
                     : page === 'registrations'
@@ -582,6 +641,8 @@ export default function App() {
                   unread={unread}
                   go={go}
                   inspect={inspect}
+                  authenticated={Boolean(user)}
+                  requireLogin={() => setShowLogin(true)}
                 />
               )}
               {page === 'events' && (
@@ -591,7 +652,7 @@ export default function App() {
                   inspect={inspect}
                 />
               )}
-              {page === 'registrations' && (
+              {page === 'registrations' && user && (
                 <RegistrationsPage
                   items={registrations}
                   go={go}
@@ -600,7 +661,7 @@ export default function App() {
                   notify={notify}
                 />
               )}
-              {page === 'notices' && (
+              {page === 'notices' && user && (
                 <Box className="notices-page">
                   {notices.map((n) => (
                     <Box className="notice-full panel" key={n.id}>
@@ -622,8 +683,8 @@ export default function App() {
                   ))}
                 </Box>
               )}
-              {page === 'chat' && <ChatPage user={user} />}
-              {page === 'notifications' && (
+              {page === 'chat' && <ChatPage user={user} requireLogin={() => setShowLogin(true)} />}
+              {page === 'notifications' && user && (
                 <Box className="panel notifications-panel">
                   <Box className="section-heading">
                     <T className="section-title">
@@ -668,7 +729,7 @@ export default function App() {
                   )}
                 </Box>
               )}
-              {page === 'admin' && user.role === 'admin' && (
+              {page === 'admin' && user?.role === 'admin' && (
                 <AdminPage
                   events={events}
                   notices={notices}
@@ -688,13 +749,20 @@ export default function App() {
         </main>
       </Box>
       <nav className="mobile-navigation" aria-label="Navegação principal no celular">
-        {[
-          { id: 'home', label: 'Início', icon: Home },
-          { id: 'events', label: 'Agenda', icon: CalendarDays },
-          { id: 'registrations', label: 'Inscrições', icon: Ticket },
-          { id: 'notices', label: 'Mural', icon: BookOpen },
-          { id: 'chat', label: 'Assistente', icon: MessageCircle },
-        ].map((n) => (
+        {(user
+          ? [
+              { id: 'home', label: 'Início', icon: Home },
+              { id: 'events', label: 'Agenda', icon: CalendarDays },
+              { id: 'registrations', label: 'Inscrições', icon: Ticket },
+              { id: 'notices', label: 'Mural', icon: BookOpen },
+              { id: 'chat', label: 'Assistente', icon: MessageCircle },
+            ]
+          : [
+              { id: 'home', label: 'Início', icon: Home },
+              { id: 'events', label: 'Agenda', icon: CalendarDays },
+              { id: 'chat', label: 'Assistente', icon: MessageCircle },
+            ]
+        ).map((n) => (
           <button
             key={n.id}
             aria-current={page === n.id ? 'page' : undefined}
@@ -737,7 +805,7 @@ export default function App() {
   );
 }
 
-function Login({ onLogin }: { onLogin: (u: User) => void }) {
+function Login({ onLogin, onBack }: { onLogin: (u: User) => void; onBack: () => void }) {
   const [email, setEmail] = useState(cloudDeployment ? '' : 'membro@comunia.local'),
     [password, setPassword] = useState(cloudDeployment ? '' : 'Comunia@123'),
     [name, setName] = useState(''),
@@ -789,6 +857,9 @@ function Login({ onLogin }: { onLogin: (u: User) => void }) {
       </Box>
       <Box className="login-form-side">
         <Box className="login-form">
+          <Button variant="login-back" onClick={onBack}>
+            <ArrowLeft size={16} /> Continuar explorando
+          </Button>
           <Badge kind="green">BEM-VINDO À NOSSA COMUNIDADE</Badge>
           <T className="login-title">{register ? 'Crie sua conta' : 'Entre na sua conta'}</T>
           <T className="muted login-caption">
@@ -876,6 +947,8 @@ function HomePage({
   unread,
   go,
   inspect,
+  authenticated,
+  requireLogin,
 }: {
   events: Event[];
   registrations: Registration[];
@@ -883,6 +956,8 @@ function HomePage({
   unread: number;
   go: (s: string) => void;
   inspect: (e: Event) => void;
+  authenticated: boolean;
+  requireLogin: () => void;
 }) {
   const upcoming = events.filter((e) => e.published && new Date(e.starts_at) > new Date());
   const active = registrations.filter((r) => r.status !== 'cancelled');
@@ -952,22 +1027,45 @@ function HomePage({
           onClick={() => go('events')}
           color="green"
         />
-        <Stat
-          icon={<Ticket />}
-          value={String(active.length).padStart(2, '0')}
-          label="Minhas inscrições"
-          hint="Acompanhe suas reservas"
-          onClick={() => go('registrations')}
-          color="peach"
-        />
-        <Stat
-          icon={<Bell />}
-          value={String(unread).padStart(2, '0')}
-          label="Novidades para você"
-          hint="Notificações não lidas"
-          onClick={() => go('notifications')}
-          color="purple"
-        />
+        {authenticated ? (
+          <>
+            <Stat
+              icon={<Ticket />}
+              value={String(active.length).padStart(2, '0')}
+              label="Minhas inscrições"
+              hint="Acompanhe suas reservas"
+              onClick={() => go('registrations')}
+              color="peach"
+            />
+            <Stat
+              icon={<Bell />}
+              value={String(unread).padStart(2, '0')}
+              label="Novidades para você"
+              hint="Notificações não lidas"
+              onClick={() => go('notifications')}
+              color="purple"
+            />
+          </>
+        ) : (
+          <>
+            <Stat
+              icon={<MessageCircle />}
+              value="24h"
+              label="Assistente da comunidade"
+              hint="Tire dúvidas sem criar uma conta"
+              onClick={() => go('chat')}
+              color="purple"
+            />
+            <Stat
+              icon={<Heart />}
+              value="Você"
+              label="Quer participar?"
+              hint="Entre somente quando precisar"
+              onClick={requireLogin}
+              color="peach"
+            />
+          </>
+        )}
       </Box>
       {nextRegistration && (
         <div className="my-next-event">
@@ -1035,8 +1133,12 @@ function HomePage({
                 <T className="notice-excerpt">{n.body}</T>
               </Box>
             ))}
-            <Button variant="text-button notice-link" onClick={() => go('notices')}>
-              Abrir mural da comunidade <ArrowUpRight size={15} />
+            <Button
+              variant="text-button notice-link"
+              onClick={() => (authenticated ? go('notices') : requireLogin())}
+            >
+              {authenticated ? 'Abrir mural da comunidade' : 'Entrar para acompanhar novidades'}{' '}
+              <ArrowUpRight size={15} />
             </Button>
           </Box>
           <Box className="assistant-teaser">
@@ -1282,12 +1384,14 @@ function EventDetail({
   close,
   register,
   viewRegistration,
+  requiresLogin = false,
 }: {
   event: Event;
   registration?: Registration;
   close: () => void;
   register: () => Promise<void>;
   viewRegistration: () => void;
+  requiresLogin?: boolean;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -1361,7 +1465,8 @@ function EventDetail({
             'Vagas esgotadas'
           ) : (
             <>
-              Confirmar minha inscrição <ArrowRight size={18} />
+              {requiresLogin ? 'Entrar para se inscrever' : 'Confirmar minha inscrição'}{' '}
+              <ArrowRight size={18} />
             </>
           )}
         </Button>
@@ -1563,17 +1668,20 @@ function Confirm({
   );
 }
 
-function ChatPage({ user }: { user: User }) {
+function ChatPage({ user, requireLogin }: { user: User | null; requireLogin: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]),
     [input, setInput] = useState(''),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    api<Message[]>('/chat')
-      .then(setMessages)
-      .catch((e) => setError(e.message));
-  }, []);
+    setMessages([]);
+    setError('');
+    if (user)
+      api<Message[]>('/chat')
+        .then(setMessages)
+        .catch((e) => setError(e.message));
+  }, [user?.id]);
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [messages, busy]);
@@ -1582,7 +1690,7 @@ function ChatPage({ user }: { user: User }) {
     setBusy(true);
     setError('');
     try {
-      const result = await post('/chat', { message: value });
+      const result = await post(user ? '/chat' : '/public/chat', { message: value });
       setMessages((previous) => [
         ...previous,
         { id: Date.now(), role: 'user', content: value },
@@ -1615,7 +1723,9 @@ function ChatPage({ user }: { user: User }) {
             <Box className="welcome-spark">
               <MessageCircle size={31} />
             </Box>
-            <T className="section-title">Olá, {user.name.split(' ')[0]}. Como posso ajudar?</T>
+            <T className="section-title">
+              {user ? `Olá, ${user.name.split(' ')[0]}.` : 'Olá!'} Como posso ajudar?
+            </T>
             <T className="muted center">
               Estou aqui para aproximar você da comunidade.
               <br />
@@ -1623,12 +1733,15 @@ function ChatPage({ user }: { user: User }) {
             </T>
           </Box>
           <Box className="suggestions">
-            {[
-              'Quais são os próximos eventos?',
-              'Qual o horário dos cultos?',
-              'Minhas inscrições',
-              'Como chegar?',
-            ].map((s) => (
+            {(user
+              ? [
+                  'Quais são os próximos eventos?',
+                  'Qual o horário dos cultos?',
+                  'Minhas inscrições',
+                  'Como chegar?',
+                ]
+              : ['Quais são os próximos eventos?', 'Qual o horário dos cultos?', 'Como chegar?']
+            ).map((s) => (
               <Button variant="suggestion" key={s} disabled={busy} onClick={() => send(s)}>
                 {s}
                 <ArrowUpRight size={14} />
@@ -1638,17 +1751,19 @@ function ChatPage({ user }: { user: User }) {
           {messages.map((m) => (
             <Box key={m.id} className={`chat-message ${m.role}`}>
               <Box className="message-avatar">
-                {m.role === 'assistant' ? <MessageCircle size={16} /> : user.name[0]}
+                {m.role === 'assistant' ? <MessageCircle size={16} /> : user?.name[0] || 'V'}
               </Box>
               <Box className="message-bubble">
                 <T>{m.content}</T>
                 {m.role === 'assistant' && (
                   <T className="message-source">
-                    {m.intent === 'events' || m.intent === 'registrations'
-                      ? 'Consulta ao banco da comunidade'
-                      : m.intent === 'human'
-                        ? 'Solicitação registrada para a equipe'
-                        : 'Base de informações da comunidade'}
+                    {m.intent === 'auth'
+                      ? 'Entre para acessar informações pessoais'
+                      : m.intent === 'events' || m.intent === 'registrations'
+                        ? 'Consulta ao banco da comunidade'
+                        : m.intent === 'human'
+                          ? 'Solicitação registrada para a equipe'
+                          : 'Base de informações da comunidade'}
                   </T>
                 )}
               </Box>
@@ -1682,12 +1797,19 @@ function ChatPage({ user }: { user: User }) {
           <Leaf size={26} />
           <T className="section-title">Como podemos ajudar?</T>
           <T className="muted body">Um caminho mais simples para encontrar o que você precisa.</T>
-          {[
-            [CalendarDays, 'Agenda e eventos'],
-            [Ticket, 'Suas inscrições'],
-            [Clock, 'Horários dos encontros'],
-            [MapPin, 'Localização'],
-          ].map(([Icon, label]: any) => (
+          {(user
+            ? [
+                [CalendarDays, 'Agenda e eventos'],
+                [Ticket, 'Suas inscrições'],
+                [Clock, 'Horários dos encontros'],
+                [MapPin, 'Localização'],
+              ]
+            : [
+                [CalendarDays, 'Agenda e eventos'],
+                [Clock, 'Horários dos encontros'],
+                [MapPin, 'Localização'],
+              ]
+          ).map(([Icon, label]: any) => (
             <Box key={label} className="row">
               <Icon size={18} />
               <T className="body">{label}</T>
@@ -1701,9 +1823,9 @@ function ChatPage({ user }: { user: User }) {
           <Button
             variant="secondary"
             disabled={busy}
-            onClick={() => send('Quero falar com um atendente')}
+            onClick={() => (user ? send('Quero falar com um atendente') : requireLogin())}
           >
-            Solicitar atendimento <ArrowRight size={16} />
+            {user ? 'Solicitar atendimento' : 'Entrar para solicitar'} <ArrowRight size={16} />
           </Button>
         </Box>
       </Box>
