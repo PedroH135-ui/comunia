@@ -53,7 +53,7 @@ Referências: [Vercel Functions](https://vercel.com/docs/functions/quickstart), 
 - Endereço público: https://comunia-theta.vercel.app
 - Implantação: IMPLANTACAO_PRIVADA.
 - 7 testes locais passaram, incluindo concorrência de inscrições, limite distribuído e cookies seguros.
-- 18 requisições verificadas na implantação: arquivos da interface, API, bloqueio de origem indevida, rejeição da senha antiga, login, permissões, cadastro, inscrição, cancelamento, chatbot e logout.
+- 21 requisições verificadas na implantação: arquivos da interface, conteúdo e assistente públicos, API, bloqueio de origem indevida, login, permissões, cadastro, inscrição, cancelamento, chatbot autenticado e logout.
 - Conta temporária de teste e registros associados removidos após a validação.
 - Domínio público validado sem sessão da Vercel: página inicial e health 200, login e logout 200.
 - Auditoria das dependências de produção sem vulnerabilidades reportadas nesta verificação. A árvore de desenvolvimento apresenta avisos em dependências transitivas do Metro; Metro não é utilizado para servir nem compilar esta versão web com Vite.

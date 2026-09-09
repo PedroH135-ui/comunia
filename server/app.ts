@@ -46,6 +46,92 @@ const admin = (req: Request, _res: Response, next: NextFunction) => {
   next();
 };
 const id = (s: unknown) => z.coerce.number().int().positive().parse(s);
+const normalize = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+async function answerChat(message: string, user?: User) {
+  const input = normalize(message);
+  let answer = '';
+  let intent = 'fallback';
+  if (/atendente|humano|pastor|oracao/.test(input)) {
+    if (!user) {
+      return {
+        intent: 'auth',
+        answer:
+          'Para solicitar atendimento da equipe, entre ou crie sua conta. Assim conseguimos identificar você e acompanhar o pedido com privacidade.',
+      };
+    }
+    intent = 'human';
+    answer =
+      'Registrei seu pedido para a equipe de acolhimento. Um administrador pode acompanhá-lo no painel. Nesta V1, o retorno acontece por aqui na comunidade, sem envio automático por WhatsApp.';
+    await prisma.support_requests.create({ data: { user_id: user.id, message } });
+  } else if (/inscri|meus eventos|ingresso/.test(input)) {
+    if (!user) {
+      return {
+        intent: 'auth',
+        answer:
+          'Para consultar inscrições e ingressos, entre na sua conta. As informações pessoais ficam protegidas e vinculadas somente a você.',
+      };
+    }
+    intent = 'registrations';
+    const rows = await prisma.registrations.findMany({
+      where: { user_id: user.id, status: { not: 'cancelled' } },
+      select: { status: true, events: { select: { title: true } } },
+    });
+    answer = rows.length
+      ? 'Suas inscrições:\n' +
+        rows
+          .map(
+            (r) =>
+              `• ${r.events.title} — ${r.status === 'confirmed' ? 'confirmada' : 'pagamento simulado pendente'}`,
+          )
+          .join('\n')
+      : 'Você ainda não tem inscrições ativas. Abra Eventos e escolha um encontro para participar.';
+  } else if (/evento|programacao|agenda|retiro|proximo/.test(input)) {
+    intent = 'events';
+    const rows = await prisma.events.findMany({
+      where: { published: true, starts_at: { gt: new Date() } },
+      orderBy: { starts_at: 'asc' },
+      take: 5,
+      select: { title: true, starts_at: true, price_cents: true },
+    });
+    answer = rows.length
+      ? 'Confira os próximos encontros:\n' +
+        rows
+          .map(
+            (e) =>
+              `• ${e.title} — ${new Date(e.starts_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} · ${e.price_cents === 0 ? 'gratuito' : (e.price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+          )
+          .join('\n') +
+        '\nVocê pode se inscrever pela página Eventos.'
+      : 'Ainda não há próximos eventos publicados. Volte em breve para conferir a agenda.';
+  } else if (/^(oi|ola|bom dia|boa tarde|boa noite|obrigad)/.test(input)) {
+    intent = 'greeting';
+    answer =
+      'Olá! Que bom ter você por aqui. Posso ajudar com eventos, horários e localização. O que você gostaria de saber?';
+  } else {
+    const rows = await prisma.knowledge.findMany({ orderBy: { id: 'asc' } });
+    const matches = rows
+      .map((k) => ({
+        k,
+        score: k.keywords
+          .split(',')
+          .filter((word: string) => input.includes(normalize(word.trim()))).length,
+      }))
+      .sort((a, b) => b.score - a.score);
+    if (matches[0]?.score) {
+      intent = 'knowledge';
+      answer = matches[0].k.answer;
+    } else {
+      answer =
+        'Ainda não encontrei essa informação na base da comunidade. Posso consultar eventos, horários e localização.';
+    }
+  }
+  return { answer, intent };
+}
 const session = async (res: Response, user: User) => {
   const token = randomBytes(32).toString('hex');
   await prisma.sessions.create({
@@ -129,6 +215,29 @@ app.post('/api/auth/logout', async (req, res) => {
   res.json({ ok: true });
 });
 app.get('/api/auth/me', auth, (req, res) => res.json(req.user));
+
+app.get('/api/public/events', async (_req, res) => {
+  const events = await prisma.events.findMany({
+    where: { published: true },
+    orderBy: { starts_at: 'asc' },
+    include: { _count: { select: { registrations: { where: { status: { not: 'cancelled' } } } } } },
+  });
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+  res.json(events.map(({ _count, ...event }) => ({ ...event, registered: _count.registrations })));
+});
+app.get('/api/public/notices', async (_req, res) => {
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+  res.json(await prisma.notices.findMany({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] }));
+});
+app.post('/api/public/chat', async (req, res) => {
+  const rate = await consumeAttempt('public-chat', req.ip || 'local', 40);
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', rate.retryAfter);
+    throw fail('Muitas mensagens em pouco tempo. Aguarde alguns minutos.', 429);
+  }
+  const { message } = z.object({ message: z.string().trim().min(1).max(1000) }).parse(req.body);
+  res.json(await answerChat(message));
+});
 app.use('/api', auth);
 app.get('/api/events', async (req, res) => {
   const events = await prisma.events.findMany({
@@ -268,11 +377,6 @@ app.post('/api/registrations/:id/cancel', async (req, res) => {
     client.release();
   }
 });
-const normalize = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
 app.get('/api/chat', async (req, res) =>
   res.json(
     (
@@ -286,67 +390,7 @@ app.get('/api/chat', async (req, res) =>
 );
 app.post('/api/chat', async (req, res) => {
   const { message } = z.object({ message: z.string().trim().min(1).max(1000) }).parse(req.body);
-  const input = normalize(message);
-  let answer = '';
-  let intent = 'fallback';
-  if (/atendente|humano|pastor|oracao/.test(input)) {
-    intent = 'human';
-    answer =
-      'Registrei seu pedido para a equipe de acolhimento. Um administrador pode acompanhá-lo no painel. Nesta V1, o retorno acontece por aqui na comunidade, sem envio automático por WhatsApp.';
-    await prisma.support_requests.create({ data: { user_id: req.user!.id, message } });
-  } else if (/inscri|meus eventos|ingresso/.test(input)) {
-    intent = 'registrations';
-    const rows = await prisma.registrations.findMany({
-      where: { user_id: req.user!.id, status: { not: 'cancelled' } },
-      select: { status: true, events: { select: { title: true } } },
-    });
-    answer = rows.length
-      ? 'Suas inscrições:\n' +
-        rows
-          .map(
-            (r) =>
-              `• ${r.events.title} — ${r.status === 'confirmed' ? 'confirmada' : 'pagamento simulado pendente'}`,
-          )
-          .join('\n')
-      : 'Você ainda não tem inscrições ativas. Abra Eventos e escolha um encontro para participar.';
-  } else if (/evento|programacao|agenda|retiro|proximo/.test(input)) {
-    intent = 'events';
-    const rows = await prisma.events.findMany({
-      where: { published: true, starts_at: { gt: new Date() } },
-      orderBy: { starts_at: 'asc' },
-      take: 5,
-      select: { title: true, starts_at: true, price_cents: true },
-    });
-    answer = rows.length
-      ? 'Confira os próximos encontros:\n' +
-        rows
-          .map(
-            (e) =>
-              `• ${e.title} — ${new Date(e.starts_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} · ${e.price_cents === 0 ? 'gratuito' : (e.price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
-          )
-          .join('\n') +
-        '\nVocê pode se inscrever pela página Eventos.'
-      : 'Ainda não há próximos eventos publicados. Peça ajuda a um atendente.';
-  } else if (/^(oi|ola|bom dia|boa tarde|boa noite|obrigad)/.test(input)) {
-    intent = 'greeting';
-    answer =
-      'Olá! Que bom ter você por aqui. Posso ajudar com eventos, horários, localização e suas inscrições. O que você gostaria de saber?';
-  } else {
-    const rows = await prisma.knowledge.findMany({ orderBy: { id: 'asc' } });
-    const matches = rows
-      .map((k) => ({
-        k,
-        score: k.keywords.split(',').filter((w: string) => input.includes(normalize(w.trim())))
-          .length,
-      }))
-      .sort((a, b) => b.score - a.score);
-    if (matches[0]?.score) {
-      intent = 'knowledge';
-      answer = matches[0].k.answer;
-    } else
-      answer =
-        'Ainda não encontrei essa informação na base da comunidade. Posso consultar eventos, horários e inscrições. Se preferir falar com a equipe, escreva “atendente”.';
-  }
+  const { answer, intent } = await answerChat(message, req.user!);
   await prisma.chat_messages.createMany({
     data: [
       { user_id: req.user!.id, role: 'user', content: message, intent },

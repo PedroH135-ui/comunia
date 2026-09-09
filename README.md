@@ -32,14 +32,15 @@ Se o aplicativo já estiver aberto, apenas visite o endereço. Não é necessár
 
 ## O que funciona
 
-- Login, criação de conta de membro, logout, sessão persistente e autorização por perfil.
-- Visão geral com números vindos do banco, próximos eventos e mural.
+- Acesso público à visão geral, agenda e assistente; o login aparece somente em ações pessoais.
+- Login contextual, criação de conta de membro, logout, sessão persistente e autorização por perfil.
+- Visão geral com números vindos do banco, próximos eventos e prévia do mural.
 - Agenda, busca, categorias, detalhes de eventos e quantidade real de vagas.
 - Inscrição gratuita com confirmação imediata; inscrição paga com reserva de vaga.
 - Pagamento **simulado**, ingresso com código, cancelamento e estorno **simulado**.
 - Controle transacional para impedir duas inscrições disputando a última vaga ou pagamentos duplicados.
 - Notificações **dentro do aplicativo** para novos eventos publicados, atualizações, avisos e inscrições; leitura e atualização a cada 15 segundos.
-- Chatbot por intenções/FAQ, consulta aos eventos e inscrições do banco, histórico persistente e encaminhamento à equipe.
+- Chatbot público por intenções/FAQ; após o login, consulta inscrições, mantém histórico e encaminha pedidos à equipe.
 - Administração: criar/editar eventos, publicar ou guardar rascunho, acompanhar inscrições e receita fictícia, cadastrar/editar conhecimento do chatbot, publicar avisos, consultar membros e interações e concluir pedidos de atendimento.
 
 ## Revisão visual e pesquisa
@@ -113,7 +114,7 @@ O build gera `dist/`. Depois dele, `npm.cmd start` serve a interface compilada e
 - **IA:** sem LLM/RAG ou API paga; o chatbot usa detecção simples de intenções e palavras-chave. As respostas vêm da base cadastrada. Não é um modelo treinado.
 - **Reservas:** inscrições pendentes ocupam vaga até serem pagas ou canceladas; expiração automática fica para a integração com pagamentos.
 - **Administração:** lista membros, mas não altera perfis ou bloqueia contas nesta V1. Não há recuperação de senha, check-in por QR, anexos, múltiplas instituições ou reembolso real.
-- **Hospedagem:** nenhum deploy foi realizado. Para Vercel, precisamos adaptar a entrada serverless e contratar/configurar um PostgreSQL acessível em nuvem. Enquanto local, o PC precisa permanecer ligado.
+- **Hospedagem:** a demonstração está publicada na Vercel e usa PostgreSQL gerenciado pela Neon. O ambiente local continua isolado para desenvolvimento.
 - **Produção:** antes de usuários reais, configurar HTTPS/cookies seguros, segredos, backup, recuperação de conta, política de retenção, limites distribuídos de requisições e monitoramento.
 - As fontes tipográficas tentam carregar do Google Fonts; a interface funciona com fontes alternativas sem internet.
 

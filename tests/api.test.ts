@@ -78,6 +78,26 @@ test('autenticação e permissões protegem dados e administração', async () =
   );
 });
 
+test('visitante consulta página pública e assistente sem criar sessão', async () => {
+  const events = await request('/public/events');
+  assert.equal(events.status, 200);
+  assert.ok(events.data.length > 0);
+  assert.ok(events.data.every((event: any) => event.published));
+  assert.equal((await request('/public/notices')).status, 200);
+
+  const publicAnswer = await request('/public/chat', 'POST', {
+    message: 'Quais são os próximos eventos?',
+  });
+  assert.equal(publicAnswer.status, 200);
+  assert.equal(publicAnswer.data.intent, 'events');
+
+  const privateAnswer = await request('/public/chat', 'POST', { message: 'Meus ingressos' });
+  assert.equal(privateAnswer.status, 200);
+  assert.equal(privateAnswer.data.intent, 'auth');
+  assert.match(privateAnswer.data.answer, /entre na sua conta/i);
+  assert.equal((await request('/chat')).status, 401);
+});
+
 test('admin aceita usuário curto sem enfraquecer a validação de novos cadastros', async () => {
   assert.equal(
     (await request('/auth/login', 'POST', { email: 'admin', password: 'xxxxx' })).status,
