@@ -1,6 +1,6 @@
 # ComunIA · V1 local
 
-Aplicativo de demonstração do TCC **ComunIA — Aplicativo Inteligente de Atendimento para Comunidades Religiosas**. Interface responsiva em React Native para Web, API Node.js/TypeScript e banco PostgreSQL persistente. Comunidade, endereços e eventos de exemplo são fictícios.
+Aplicativo de demonstração do TCC **ComunIA — Aplicativo Inteligente de Atendimento para Comunidades Religiosas**, configurado para a **Comunidade Koinonia**. Interface responsiva em React Native para Web, API Node.js/TypeScript e banco PostgreSQL persistente. A identidade e o endereço público foram adaptados a partir do perfil oficial; os eventos e valores da agenda continuam demonstrativos até serem atualizados pela administração.
 
 ## Versão online
 

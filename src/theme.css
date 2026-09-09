@@ -316,6 +316,7 @@
     min-height: 400px;
   }
 }
+
 :root {
   --green: #213644;
   --deep: #172731;
@@ -1720,4 +1721,141 @@ th {
   :is(.footer, [data-ui~='footer']) {
     font-size: 9px;
   }
+}
+
+/* Identidade visual da Comunidade Koinonia */
+:root {
+  --green: #171719;
+  --deep: #0e0e10;
+  --muted: #716f6b;
+  --line: #e4e0da;
+  --paper: #fffefa;
+  color: #24221f;
+  background: #f5f2ec;
+}
+body {
+  background: #f5f2ec;
+}
+:is(.sidebar, [data-ui~='sidebar']),
+:is(.topbar, [data-ui~='topbar']) {
+  background: #fffefa;
+  border-color: #e5e1db;
+}
+:is(.brand-symbol, [data-ui~='brand-symbol']) {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #111113;
+  color: #fff;
+}
+:is(.brand-name, [data-ui~='brand-name']),
+:is(.brand-ia, [data-ui~='brand-ia']) {
+  color: #171719;
+}
+:is(.brand-dot, [data-ui~='brand-dot']) {
+  color: #3424d5;
+}
+:is(.community-icon, [data-ui~='community-icon']) {
+  border-radius: 50%;
+  background: #ece9ff;
+  color: #3424d5;
+}
+:is(.button, [data-ui~='button']):is(.nav-item, [data-ui~='nav-item']):is(
+    .active,
+    [data-ui~='active']
+  ) {
+  color: #2819ba;
+  background: #efedff;
+}
+:is(.button, [data-ui~='button']):is(.nav-item, [data-ui~='nav-item']):hover {
+  color: #171719;
+  background: #f1eee8;
+}
+:is(.sidebar-note-title, [data-ui~='sidebar-note-title']),
+:is(.profile-name, [data-ui~='profile-name']),
+:is(.card-title, [data-ui~='card-title']),
+:is(.page-title, [data-ui~='page-title']),
+:is(.section-title, [data-ui~='section-title']) {
+  color: #26231f;
+}
+.community-social-link,
+.brief-community-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #3424d5;
+  font-size: 10px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.community-social-link:hover,
+.brief-community-meta a:hover {
+  text-decoration: underline;
+}
+:is(.community-brief, [data-ui~='community-brief']) {
+  background: #fffefa;
+  border-color: #ded8cf;
+}
+:is(.brief-kicker, [data-ui~='brief-kicker']) {
+  color: #3424d5;
+}
+:is(.brief-intro, [data-ui~='brief-intro']) h2 {
+  color: #211f1c;
+}
+.brief-community-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 15px;
+  margin: -10px 0 19px;
+}
+.brief-community-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #736e67;
+  font-size: 10px;
+  font-weight: 600;
+}
+:is(.next-event, [data-ui~='next-event']) {
+  background: #151517;
+}
+:is(.next-event, [data-ui~='next-event']):hover {
+  background: #29292c;
+}
+:is(.next-event-top, [data-ui~='next-event-top']) {
+  color: #c8c3bc;
+}
+:is(.event-art, [data-ui~='event-art']):is(.forest, [data-ui~='forest']) {
+  background: #222225;
+  color: #f8f5ef;
+}
+:is(.event-art, [data-ui~='event-art']):is(.sand, [data-ui~='sand']) {
+  background: #e9dfd0;
+  color: #504438;
+}
+:is(.event-art, [data-ui~='event-art']):is(.peach, [data-ui~='peach']) {
+  background: #eee7dc;
+  color: #5b4c41;
+}
+:is(.event-art, [data-ui~='event-art']):is(.sage, [data-ui~='sage']) {
+  background: #dad5c9;
+  color: #3f433d;
+}
+:is(.event-art, [data-ui~='event-art']):is(.blue, [data-ui~='blue']) {
+  background: #3424d5;
+  color: #f7f5ff;
+}
+:is(.login-story, [data-ui~='login-story']) {
+  background: #eee9e0;
+}
+:is(.login-headline, [data-ui~='login-headline']),
+:is(.login-title, [data-ui~='login-title']) {
+  color: #211f1c;
+}
+:is(.login-art, [data-ui~='login-art']) :is(.hero-art, [data-ui~='hero-art']) {
+  background: #151517;
+  color: #f7f3e9;
+}
+:is(.local-indicator, [data-ui~='local-indicator']) > span:first-child {
+  background: #3424d5;
 }

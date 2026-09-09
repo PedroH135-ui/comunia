@@ -84,17 +84,17 @@ if (!(await query('SELECT 1 FROM knowledge LIMIT 1')).rowCount) {
     [
       'Horários dos encontros',
       'culto,horario,reuniao,domingo,celebracao',
-      'Na Comunidade Horizonte, os encontros acontecem aos domingos, às 9h e às 19h, e às quartas-feiras, às 19h30. Estes são dados fictícios da demonstração.',
+      'A programação da Comunidade Koinonia pode mudar a cada semana. Consulte a agenda publicada no ComunIA ou o Instagram @comunidadekoinonia. Para confirmar um horário específico, solicite atendimento.',
     ],
     [
       'Como chegar',
       'endereco,localizacao,chegar,onde fica',
-      'Nossa comunidade de demonstração fica na Rua das Oliveiras, 120, Centro. Endereço fictício para esta V1.',
+      'A Comunidade Koinonia fica na QNL 19, Conjunto I, Casa 17, Taguatinga, Distrito Federal, CEP 72152-009. Confirme na agenda o local de cada encontro, pois algumas atividades podem acontecer em outro endereço.',
     ],
     [
       'Grupos e departamentos',
       'jovens,criancas,infantil,departamento,ministerio,grupo',
-      'Temos grupos de jovens, acolhimento infantil, música e ação social. Consulte Eventos para ver os próximos encontros ou solicite atendimento para saber como participar.',
+      'A Comunidade Koinonia reúne pessoas em cultos, célula de jovens, música e atividades comunitárias. Consulte Eventos para ver o que está publicado ou solicite atendimento para saber como participar.',
     ],
     [
       'Batismo',
@@ -111,10 +111,10 @@ if (!(await query('SELECT 1 FROM knowledge LIMIT 1')).rowCount) {
 }
 if (!(await query('SELECT 1 FROM notices LIMIT 1')).rowCount) {
   await query(
-    "INSERT INTO notices(title,body,category) VALUES ('Um lugar para pertencer','Seja bem-vindo à Comunidade Horizonte! Este é um espaço de demonstração do ComunIA. Explore os encontros, faça uma inscrição e converse com nosso assistente.','Boas-vindas'),('Campanha de alimentos','Nosso ponto de apoio está recebendo alimentos não perecíveis. Participe do evento Mãos que transformam para ajudar na organização.','Ação social'),('Sua comunidade, na palma da mão','Agora você pode acompanhar a agenda e suas inscrições aqui. As notificações desta V1 ficam na sua caixa de entrada no aplicativo.','Novidade')",
+    "INSERT INTO notices(title,body,category) VALUES ('Uma família para pertencer','Seja bem-vindo à Comunidade Koinonia! Conheça a agenda, participe dos encontros e converse com nosso assistente.','Boas-vindas'),('Campanha de alimentos','Nosso ponto de apoio está recebendo alimentos não perecíveis. Participe do evento Mãos que transformam para ajudar na organização.','Ação social'),('Sua comunidade, na palma da mão','Agora você pode acompanhar a agenda e suas inscrições aqui. As notificações desta V1 ficam na sua caixa de entrada no aplicativo.','Novidade')",
   );
   await query(
-    "INSERT INTO notifications(user_id,title,body) SELECT id,'Que bom ter você aqui!','Seu espaço na Comunidade Horizonte está pronto. Conheça a agenda e participe.' FROM users",
+    "INSERT INTO notifications(user_id,title,body) SELECT id,'Que bom ter você aqui!','Seu espaço na Comunidade Koinonia está pronto. Conheça a agenda e participe.' FROM users",
   );
 }
 await disconnectDatabase();
