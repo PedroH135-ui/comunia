@@ -83,7 +83,8 @@ Em outro computador, instale Node.js 24 e PostgreSQL 16, copie `.env.example` pa
 ```text
 src/                  Interface e estilos responsivos
 server/app.ts         API REST, autenticação e regras de negócio
-server/schema.sql     Tabelas e integridade do banco
+prisma/schema.prisma  Modelos tipados das tabelas existentes
+prisma/migrations/    Migrações versionadas e regras de integridade
 server/seed.ts        Conteúdo fictício inicial
 server/security.ts   Hash das senhas com scrypt
 scripts/database.mjs Inicialização da instância local isolada
