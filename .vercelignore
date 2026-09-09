@@ -4,6 +4,7 @@
 .git
 .vercel
 node_modules
+server/generated
 dist
 tests
 docs

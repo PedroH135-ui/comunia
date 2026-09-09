@@ -2,7 +2,7 @@ import express, { type Request, type Response, type NextFunction } from 'express
 import cookieParser from 'cookie-parser';
 import { randomBytes } from 'node:crypto';
 import { z, ZodError } from 'zod';
-import { pool, query } from './db.js';
+import { pool, query, prisma } from './db.js';
 import { hash, verify } from './security.js';
 import { cloud, secureCookies, allowedOrigins } from './runtime.js';
 import { consumeAttempt } from './rate-limit.js';
@@ -33,12 +33,12 @@ declare global {
 }
 const fail = (message: string, status = 400) => Object.assign(new Error(message), { status });
 const auth = async (req: Request, _res: Response, next: NextFunction) => {
-  const { rows } = await query(
-    'SELECT u.id,u.name,u.email,u.role FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=$1 AND s.expires_at>now()',
-    [req.cookies.session || ''],
-  );
-  if (!rows[0]) throw fail('Entre na sua conta para continuar.', 401);
-  req.user = rows[0];
+  const active = await prisma.sessions.findFirst({
+    where: { token: req.cookies.session || '', expires_at: { gt: new Date() } },
+    select: { users: { select: { id: true, name: true, email: true, role: true } } },
+  });
+  if (!active?.users) throw fail('Entre na sua conta para continuar.', 401);
+  req.user = active.users;
   next();
 };
 const admin = (req: Request, _res: Response, next: NextFunction) => {
@@ -48,10 +48,9 @@ const admin = (req: Request, _res: Response, next: NextFunction) => {
 const id = (s: unknown) => z.coerce.number().int().positive().parse(s);
 const session = async (res: Response, user: User) => {
   const token = randomBytes(32).toString('hex');
-  await query(
-    "INSERT INTO sessions(token,user_id,expires_at) VALUES($1,$2,now()+interval '7 days')",
-    [token, user.id],
-  );
+  await prisma.sessions.create({
+    data: { token, user_id: user.id, expires_at: new Date(Date.now() + 7 * 86400000) },
+  });
   res.cookie('session', token, {
     httpOnly: true,
     secure: secureCookies,
@@ -101,15 +100,15 @@ app.post('/api/auth/login', limitAuth, async (req, res) => {
     res.setHeader('Retry-After', accountLimit.retryAfter);
     throw fail('Muitas tentativas. Aguarde alguns minutos.', 429);
   }
-  const { rows } = await query('SELECT * FROM users WHERE email=$1', [email]);
+  const account = await prisma.users.findUnique({ where: { email } });
   if (
-    !rows[0] ||
-    (data.email === 'admin' && rows[0].role !== 'admin') ||
-    !verify(data.password, rows[0].password_hash)
+    !account ||
+    (data.email === 'admin' && account.role !== 'admin') ||
+    !verify(data.password, account.password_hash)
   ) {
     throw fail('Login ou senha incorretos.', 401);
   }
-  const { password_hash, ...user } = rows[0];
+  const { password_hash, ...user } = account;
   await session(res, user);
   res.json(user);
 });
@@ -117,55 +116,51 @@ app.post('/api/auth/register', limitAuth, async (req, res) => {
   const data = registrationSchema
     .extend({ name: z.string().trim().min(2).max(80) })
     .parse(req.body);
-  const { rows } = await query(
-    'INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email,role',
-    [data.name, data.email, hash(data.password)],
-  );
-  await session(res, rows[0]);
-  res.status(201).json(rows[0]);
+  const user = await prisma.users.create({
+    data: { name: data.name, email: data.email, password_hash: hash(data.password) },
+    select: { id: true, name: true, email: true, role: true },
+  });
+  await session(res, user);
+  res.status(201).json(user);
 });
 app.post('/api/auth/logout', async (req, res) => {
-  await query('DELETE FROM sessions WHERE token=$1', [req.cookies.session || '']);
+  await prisma.sessions.deleteMany({ where: { token: req.cookies.session || '' } });
   res.clearCookie('session', { path: '/' });
   res.json({ ok: true });
 });
 app.get('/api/auth/me', auth, (req, res) => res.json(req.user));
 app.use('/api', auth);
-const eventSelect = `SELECT e.*, (SELECT count(*)::int FROM registrations r WHERE r.event_id=e.id AND r.status<>'cancelled') AS registered FROM events e`;
 app.get('/api/events', async (req, res) => {
-  const { rows } = await query(
-    eventSelect +
-      (req.user!.role === 'admin' ? '' : ' WHERE e.published=true') +
-      ' ORDER BY e.starts_at',
-  );
-  res.json(rows);
+  const events = await prisma.events.findMany({
+    where: req.user!.role === 'admin' ? {} : { published: true },
+    orderBy: { starts_at: 'asc' },
+    include: { _count: { select: { registrations: { where: { status: { not: 'cancelled' } } } } } },
+  });
+  res.json(events.map(({ _count, ...event }) => ({ ...event, registered: _count.registrations })));
 });
 app.get('/api/notices', async (_req, res) =>
-  res.json((await query('SELECT * FROM notices ORDER BY created_at DESC,id DESC')).rows),
+  res.json(await prisma.notices.findMany({ orderBy: [{ created_at: 'desc' }, { id: 'desc' }] })),
 );
 app.get('/api/notifications', async (req, res) =>
   res.json(
-    (
-      await query(
-        'SELECT * FROM notifications WHERE user_id=$1 ORDER BY created_at DESC,id DESC LIMIT 100',
-        [req.user!.id],
-      )
-    ).rows,
+    await prisma.notifications.findMany({
+      where: { user_id: req.user!.id },
+      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+      take: 100,
+    }),
   ),
 );
 app.post('/api/notifications/read', async (req, res) => {
-  await query('UPDATE notifications SET read=true WHERE user_id=$1', [req.user!.id]);
+  await prisma.notifications.updateMany({ where: { user_id: req.user!.id }, data: { read: true } });
   res.json({ ok: true });
 });
 app.get('/api/registrations', async (req, res) => {
-  res.json(
-    (
-      await query(
-        `SELECT r.*,e.title,e.starts_at,e.location,e.theme FROM registrations r JOIN events e ON e.id=r.event_id WHERE r.user_id=$1 ORDER BY r.created_at DESC`,
-        [req.user!.id],
-      )
-    ).rows,
-  );
+  const items = await prisma.registrations.findMany({
+    where: { user_id: req.user!.id },
+    orderBy: { created_at: 'desc' },
+    include: { events: { select: { title: true, starts_at: true, location: true, theme: true } } },
+  });
+  res.json(items.map(({ events, ...registration }) => ({ ...registration, ...events })));
 });
 app.post('/api/events/:id/register', async (req, res) => {
   const eventId = id(req.params.id);
@@ -281,11 +276,12 @@ const normalize = (value: string) =>
 app.get('/api/chat', async (req, res) =>
   res.json(
     (
-      await query(
-        'SELECT * FROM (SELECT * FROM chat_messages WHERE user_id=$1 ORDER BY id DESC LIMIT 60) recent ORDER BY id',
-        [req.user!.id],
-      )
-    ).rows,
+      await prisma.chat_messages.findMany({
+        where: { user_id: req.user!.id },
+        orderBy: { id: 'desc' },
+        take: 60,
+      })
+    ).reverse(),
   ),
 );
 app.post('/api/chat', async (req, res) => {
@@ -297,30 +293,30 @@ app.post('/api/chat', async (req, res) => {
     intent = 'human';
     answer =
       'Registrei seu pedido para a equipe de acolhimento. Um administrador pode acompanhá-lo no painel. Nesta V1, o retorno acontece por aqui na comunidade, sem envio automático por WhatsApp.';
-    await query('INSERT INTO support_requests(user_id,message) VALUES($1,$2)', [
-      req.user!.id,
-      message,
-    ]);
+    await prisma.support_requests.create({ data: { user_id: req.user!.id, message } });
   } else if (/inscri|meus eventos|ingresso/.test(input)) {
     intent = 'registrations';
-    const { rows } = await query(
-      "SELECT e.title,r.status FROM registrations r JOIN events e ON e.id=r.event_id WHERE r.user_id=$1 AND r.status<>'cancelled'",
-      [req.user!.id],
-    );
+    const rows = await prisma.registrations.findMany({
+      where: { user_id: req.user!.id, status: { not: 'cancelled' } },
+      select: { status: true, events: { select: { title: true } } },
+    });
     answer = rows.length
       ? 'Suas inscrições:\n' +
         rows
           .map(
             (r) =>
-              `• ${r.title} — ${r.status === 'confirmed' ? 'confirmada' : 'pagamento simulado pendente'}`,
+              `• ${r.events.title} — ${r.status === 'confirmed' ? 'confirmada' : 'pagamento simulado pendente'}`,
           )
           .join('\n')
       : 'Você ainda não tem inscrições ativas. Abra Eventos e escolha um encontro para participar.';
   } else if (/evento|programacao|agenda|retiro|proximo/.test(input)) {
     intent = 'events';
-    const { rows } = await query(
-      'SELECT title,starts_at,price_cents FROM events WHERE published=true AND starts_at>now() ORDER BY starts_at LIMIT 5',
-    );
+    const rows = await prisma.events.findMany({
+      where: { published: true, starts_at: { gt: new Date() } },
+      orderBy: { starts_at: 'asc' },
+      take: 5,
+      select: { title: true, starts_at: true, price_cents: true },
+    });
     answer = rows.length
       ? 'Confira os próximos encontros:\n' +
         rows
@@ -336,7 +332,7 @@ app.post('/api/chat', async (req, res) => {
     answer =
       'Olá! Que bom ter você por aqui. Posso ajudar com eventos, horários, localização e suas inscrições. O que você gostaria de saber?';
   } else {
-    const { rows } = await query('SELECT * FROM knowledge ORDER BY id');
+    const rows = await prisma.knowledge.findMany({ orderBy: { id: 'asc' } });
     const matches = rows
       .map((k) => ({
         k,
@@ -351,10 +347,12 @@ app.post('/api/chat', async (req, res) => {
       answer =
         'Ainda não encontrei essa informação na base da comunidade. Posso consultar eventos, horários e inscrições. Se preferir falar com a equipe, escreva “atendente”.';
   }
-  await query(
-    "INSERT INTO chat_messages(user_id,role,content,intent) VALUES($1,'user',$2,$4),($1,'assistant',$3,$4)",
-    [req.user!.id, message, answer, intent],
-  );
+  await prisma.chat_messages.createMany({
+    data: [
+      { user_id: req.user!.id, role: 'user', content: message, intent },
+      { user_id: req.user!.id, role: 'assistant', content: answer, intent },
+    ],
+  });
   res.json({ answer, intent });
 });
 app.use('/api/admin', admin);
@@ -462,7 +460,7 @@ app.put('/api/admin/events/:id', async (req, res) => {
   }
 });
 app.get('/api/admin/knowledge', async (_req, res) =>
-  res.json((await query('SELECT * FROM knowledge ORDER BY id')).rows),
+  res.json(await prisma.knowledge.findMany({ orderBy: { id: 'asc' } })),
 );
 const knowledgeSchema = z.object({
   title: z.string().trim().min(3).max(120),
@@ -471,25 +469,16 @@ const knowledgeSchema = z.object({
 });
 app.post('/api/admin/knowledge', async (req, res) => {
   const k = knowledgeSchema.parse(req.body);
-  res
-    .status(201)
-    .json(
-      (
-        await query(
-          'INSERT INTO knowledge(title,keywords,answer) VALUES($1,$2,$3) RETURNING *',
-          Object.values(k),
-        )
-      ).rows[0],
-    );
+  res.status(201).json(await prisma.knowledge.create({ data: k }));
 });
 app.put('/api/admin/knowledge/:id', async (req, res) => {
   const k = knowledgeSchema.parse(req.body);
-  const result = await query(
-    'UPDATE knowledge SET title=$1,keywords=$2,answer=$3,updated_at=now() WHERE id=$4 RETURNING *',
-    [...Object.values(k), id(req.params.id)],
+  res.json(
+    await prisma.knowledge.update({
+      where: { id: id(req.params.id) },
+      data: { ...k, updated_at: new Date() },
+    }),
   );
-  if (!result.rowCount) throw fail('Conteúdo não encontrado.', 404);
-  res.json(result.rows[0]);
 });
 app.post('/api/admin/notices', async (req, res) => {
   const n = z
@@ -517,18 +506,19 @@ app.post('/api/admin/notices', async (req, res) => {
   }
 });
 app.post('/api/admin/support/:id/close', async (req, res) => {
-  const result = await query(
-    "UPDATE support_requests SET status='closed' WHERE id=$1 RETURNING *",
-    [id(req.params.id)],
-  );
-  if (!result.rowCount) throw fail('Solicitação não encontrada.', 404);
+  await prisma.support_requests.update({
+    where: { id: id(req.params.id) },
+    data: { status: 'closed' },
+  });
   res.json({ ok: true });
 });
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof ZodError)
     return res.status(400).json({ error: 'Confira os campos informados.', details: err.flatten() });
-  if (err.code === '23505') return res.status(409).json({ error: 'Este cadastro já existe.' });
+  if (err.code === '23505' || err.code === 'P2002')
+    return res.status(409).json({ error: 'Este cadastro já existe.' });
+  if (err.code === 'P2025') return res.status(404).json({ error: 'Registro não encontrado.' });
   if (err.status) return res.status(err.status).json({ error: err.message });
   console.error(err);
   res.status(500).json({ error: 'Não foi possível concluir. Tente novamente.' });

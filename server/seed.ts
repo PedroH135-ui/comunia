@@ -1,13 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { URL } from 'node:url';
-import { pool, query } from './db.js';
+import { disconnectDatabase, query } from './db.js';
 import { hash } from './security.js';
 if (process.env.VERCEL === '1' || process.env.NODE_ENV === 'production') {
   throw new Error(
     'Seed de contas públicas permitido apenas no ambiente local. Use a migração de nuvem documentada.',
   );
 }
-await query(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 for (const [name, email, role] of [
   ['Membro de demonstração', 'membro@comunia.local', 'member'],
   ['Administrador de demonstração', 'admin@comunia.local', 'admin'],
@@ -120,7 +117,7 @@ if (!(await query('SELECT 1 FROM notices LIMIT 1')).rowCount) {
     "INSERT INTO notifications(user_id,title,body) SELECT id,'Que bom ter você aqui!','Seu espaço na Comunidade Horizonte está pronto. Conheça a agenda e participe.' FROM users",
   );
 }
-await pool.end();
+await disconnectDatabase();
 console.log(
-  'Banco preparado com dados fictícios. Login: membro@comunia.local ou admin@comunia.local / Comunia@123',
+  'Banco preparado. Membro: membro@comunia.local / Comunia@123. Administrador: admin / admin.',
 );

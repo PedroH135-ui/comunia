@@ -1,12 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { URL } from 'node:url';
-import { pool, query } from './db.js';
+import { disconnectDatabase, prisma } from './db.js';
 
 try {
-  await query(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
-  await query('DELETE FROM auth_attempts WHERE expires_at < now()');
-  await query('DELETE FROM sessions WHERE expires_at < now()');
-  console.log('Esquema atualizado sem apagar cadastros.');
+  await prisma.auth_attempts.deleteMany({ where: { expires_at: { lt: new Date() } } });
+  await prisma.sessions.deleteMany({ where: { expires_at: { lt: new Date() } } });
+  console.log('Sessões e limites expirados removidos. O esquema é gerenciado por Prisma Migrate.');
 } finally {
-  await pool.end();
+  await disconnectDatabase();
 }
