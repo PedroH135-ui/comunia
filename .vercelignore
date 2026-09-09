@@ -1,0 +1,15 @@
+.env*
+.local
+.local-*
+.git
+.vercel
+node_modules
+dist
+tests
+docs
+*.cmd
+*.log
+scripts
+server/seed.ts
+server/migrate.ts
+server/schema.sql

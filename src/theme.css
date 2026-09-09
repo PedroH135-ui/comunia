@@ -1,0 +1,1723 @@
+/* ComunIA 1.1 — quieter application UI; Origin UI tabs adapted to plain CSS. */
+[data-ui=''][dir='auto'] {
+  color: inherit;
+  font: inherit;
+}
+.agenda-view-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 20px;
+  gap: 14px;
+  color: #86959f;
+  font-size: 11px;
+}
+.view-switch {
+  display: flex;
+  border: 1px solid #dce5eb;
+  border-radius: 5px;
+  padding: 3px;
+  background: #fff;
+  gap: 3px;
+}
+.view-switch button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  color: #7a8e9c;
+  border-radius: 3px;
+  font: inherit;
+  font-size: 11px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.view-switch button[aria-pressed='true'] {
+  background: #edf3f6;
+  color: #34546a;
+  font-weight: 650;
+}
+.agenda-list {
+  border: 1px solid #dfe7ec;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.agenda-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  border-bottom: 1px solid #e6ecf0;
+}
+.agenda-row:last-child {
+  border: 0;
+}
+.agenda-day {
+  flex-shrink: 0;
+  width: 59px;
+  min-height: 73px;
+  border-right: 1px solid #e1e8ed;
+  padding-right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.agenda-day strong {
+  font-size: 31px;
+  color: #37576c;
+  font-weight: 500;
+  letter-spacing: -1px;
+}
+.agenda-day > span {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #8b9daa;
+}
+.agenda-description {
+  flex: 1;
+  min-width: 0;
+}
+.agenda-category {
+  font-size: 10px;
+  color: #9a735b;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.registered-indicator {
+  font-size: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #61806e;
+  background: #eff5f0;
+  padding: 3px 6px;
+  border-radius: 3px;
+}
+.agenda-description h3 {
+  font-size: 19px;
+  font-weight: 600;
+  color: #304c60;
+  letter-spacing: -0.4px;
+  margin: 8px 0 10px;
+}
+.agenda-description p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #8497a4;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.agenda-separator {
+  padding: 0 5px;
+  color: #c1cdd6;
+}
+.agenda-action {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.agenda-action > strong {
+  font-size: 13px;
+  color: #526c7b;
+  font-weight: 600;
+}
+.agenda-action > span {
+  font-size: 10px;
+  color: #99a7b0;
+}
+.agenda-action [data-ui~='button'] {
+  font-size: 10px;
+  min-height: 32px;
+  padding: 7px 10px;
+  margin-top: 4px;
+}
+.my-next-event {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: -2px 0 28px;
+  padding: 18px 21px;
+  background: #edf3f6;
+  border: 1px solid #dbe6ed;
+  border-radius: 6px;
+}
+.my-next-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #6c899d;
+}
+.my-next-event > div:nth-child(2) {
+  flex: 1;
+}
+.my-next-event > div:nth-child(2) > span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #8a9eac;
+}
+.my-next-event strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 5px;
+  color: #3b5a6f;
+}
+.my-next-event p {
+  font-size: 10px;
+  color: #8096a5;
+  margin: 6px 0 0;
+}
+.mobile-navigation {
+  display: none;
+}
+@media (max-width: 850px) {
+  .agenda-row {
+    gap: 17px;
+    padding: 20px;
+  }
+  .agenda-description h3 {
+    font-size: 17px;
+  }
+  .agenda-action {
+    min-width: 110px;
+  }
+  .agenda-description p {
+    font-size: 10px;
+  }
+  .agenda-day {
+    padding-right: 12px;
+    width: 48px;
+  }
+  .my-next-event {
+    padding: 17px;
+    gap: 10px;
+  }
+  .my-next-event [data-ui~='text-button'] {
+    font-size: 10px;
+  }
+}
+@media (max-width: 650px) {
+  .agenda-row {
+    padding: 20px 16px;
+    gap: 15px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .agenda-day {
+    width: 45px;
+    min-height: 70px;
+    padding-right: 12px;
+  }
+  .agenda-day strong {
+    font-size: 29px;
+  }
+  .agenda-description {
+    min-width: 180px;
+  }
+  .agenda-description h3 {
+    font-size: 17px;
+  }
+  .agenda-action {
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid #e8eef2;
+    padding-top: 12px;
+    flex-wrap: wrap;
+  }
+  .agenda-action > span {
+    font-size: 9px;
+    margin-right: auto;
+  }
+  .agenda-action [data-ui~='button'] {
+    font-size: 10px;
+    margin: 0;
+  }
+  .agenda-view-bar {
+    font-size: 10px;
+    margin-top: -5px;
+  }
+  .my-next-event {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .my-next-event > div:nth-child(2) {
+    min-width: 200px;
+  }
+  .my-next-event [data-ui~='text-button'] {
+    margin-left: 48px;
+    font-size: 11px;
+  }
+  .mobile-navigation {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    border-top: 1px solid #dfe6ec;
+    background: #fffffff7;
+    backdrop-filter: blur(10px);
+    padding: 8px 4px max(9px, env(safe-area-inset-bottom));
+    min-height: 64px;
+  }
+  .mobile-navigation button {
+    border: 0;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: #8b9ca8;
+    min-width: 60px;
+    font: inherit;
+    font-size: 9px;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .mobile-navigation button[aria-current='page'] {
+    color: #ae623e;
+    font-weight: 700;
+  }
+  .mobile-navigation button[aria-current='page'] svg {
+    stroke-width: 2;
+  }
+  .button.chat-fab,
+  [data-ui~='chat-fab'] {
+    display: none !important;
+  }
+  .toast,
+  [data-ui~='toast'] {
+    bottom: 82px;
+  }
+  .main-content,
+  [data-ui~='main-content'] {
+    padding-bottom: 90px;
+  }
+  .chat-panel,
+  [data-ui~='chat-panel'] {
+    height: calc(100dvh - 285px);
+    min-height: 400px;
+  }
+}
+:root {
+  --green: #213644;
+  --deep: #172731;
+  --muted: #69747b;
+  --line: #e2e5e7;
+  --paper: #fff;
+  --serif: 'DM Sans', sans-serif;
+  color: #21313a;
+  background: #f6f7f8;
+}
+body {
+  background: #f6f7f8;
+}
+:is(.sidebar, [data-ui~='sidebar']) {
+  background: #fff;
+  border-color: #e2e5e7;
+  width: 238px;
+  padding: 32px 22px 20px;
+}
+:is(.workspace, [data-ui~='workspace']) {
+  margin-left: 238px;
+}
+:is(.brand-symbol, [data-ui~='brand-symbol']) {
+  background: #213644;
+  color: #fff;
+  border-radius: 6px;
+  transform: none;
+  height: 34px;
+  width: 34px;
+}
+:is(.brand-name, [data-ui~='brand-name']),
+:is(.brand-ia, [data-ui~='brand-ia']) {
+  color: #20333f;
+  font-size: 25px;
+  letter-spacing: -1.1px;
+}
+:is(.brand-dot, [data-ui~='brand-dot']) {
+  color: #bc613d;
+}
+:is(.community-switch, [data-ui~='community-switch']) {
+  margin-top: 26px;
+  gap: 10px;
+  padding-bottom: 24px;
+}
+:is(.community-icon, [data-ui~='community-icon']) {
+  background: #f3eee7;
+  color: #8a6b4c;
+  border-radius: 6px;
+}
+:is(.community-name, [data-ui~='community-name']) {
+  font-size: 11px;
+  color: #35434b;
+}
+:is(.community-switch, [data-ui~='community-switch']) :is(.tiny, [data-ui~='tiny']) {
+  color: #7a848b;
+  font-size: 10px;
+}
+:is(.nav-caption, [data-ui~='nav-caption']) {
+  font-size: 9px;
+  color: #899298;
+  letter-spacing: 1.2px;
+  margin: 26px 10px 12px;
+}
+:is(.button, [data-ui~='button']):is(.nav-item, [data-ui~='nav-item']) {
+  font-size: 12px;
+  min-height: 43px;
+  padding: 11px 10px;
+  gap: 12px;
+  color: #69747b;
+  border-radius: 5px;
+  font-weight: 500;
+}
+:is(.button, [data-ui~='button']):is(.nav-item, [data-ui~='nav-item']):is(
+    .active,
+    [data-ui~='active']
+  ) {
+  color: #a94d2a;
+  background: #fbf0e9;
+  font-weight: 650;
+}
+:is(.button, [data-ui~='button']):is(.nav-item, [data-ui~='nav-item']):hover {
+  background: #f3f5f6;
+  color: #233b4b;
+}
+:is(.nav-spark, [data-ui~='nav-spark']),
+:is(.hello-sun, [data-ui~='hello-sun']) {
+  display: none;
+}
+:is(.sidebar-note, [data-ui~='sidebar-note']) {
+  background: none;
+  border-top: 1px solid #e5e8ea;
+  border-radius: 0;
+  padding: 20px 0;
+  gap: 7px;
+}
+:is(.sidebar-note, [data-ui~='sidebar-note']) > svg {
+  display: none;
+}
+:is(.sidebar-note-title, [data-ui~='sidebar-note-title']) {
+  font-size: 12px;
+  letter-spacing: 0;
+  color: #4e5c64;
+  line-height: 1.8;
+}
+:is(.sidebar-note, [data-ui~='sidebar-note']) :is(.tiny, [data-ui~='tiny']) {
+  font-size: 10px;
+  color: #889197;
+}
+:is(.local-indicator, [data-ui~='local-indicator']) {
+  font-size: 9px;
+  color: #808b92;
+  margin: 7px 0 0;
+}
+:is(.local-indicator, [data-ui~='local-indicator']) > span:first-child {
+  background: #b88548;
+}
+:is(.topbar, [data-ui~='topbar']) {
+  height: 76px;
+  background: #fff;
+  border-color: #e6e9eb;
+  padding: 0 38px;
+}
+:is(.breadcrumb, [data-ui~='breadcrumb']) {
+  font-size: 12px;
+  color: #8b959c;
+}
+:is(.breadcrumb-current, [data-ui~='breadcrumb-current']) {
+  color: #354650;
+}
+:is(.profile-name, [data-ui~='profile-name']) {
+  font-size: 12px;
+  color: #263b47;
+}
+:is(.profile, [data-ui~='profile']) :is(.tiny, [data-ui~='tiny']) {
+  font-size: 10px;
+  color: #79858c;
+}
+:is(.avatar, [data-ui~='avatar']) {
+  background: #e8edf0;
+  color: #536570;
+  border: none;
+  height: 34px;
+  width: 34px;
+}
+:is(.main-content, [data-ui~='main-content']) {
+  padding: 33px 38px 25px;
+  max-width: 1510px;
+}
+:is(.page-heading, [data-ui~='page-heading']) {
+  margin-bottom: 28px;
+}
+:is(.eyebrow, [data-ui~='eyebrow']) {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #8b959c;
+  font-weight: 600;
+}
+:is(.page-title, [data-ui~='page-title']) {
+  font-size: 31px;
+  letter-spacing: -1.1px;
+  color: #233743;
+  font-weight: 700;
+}
+:is(.page-subtitle, [data-ui~='page-subtitle']) {
+  font-size: 13px;
+  color: #7a858d;
+  line-height: 1.7;
+  margin-top: 5px;
+}
+:is(.today, [data-ui~='today']) {
+  color: #697983;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  padding: 0;
+}
+:is(.button, [data-ui~='button']) {
+  border-radius: 6px;
+  background: #243c4a;
+  font-size: 13px;
+  min-height: 42px;
+  padding: 11px 16px;
+}
+:is(.button, [data-ui~='button']):hover {
+  background: #172b38;
+}
+:is(.button, [data-ui~='button']):is(.secondary, [data-ui~='secondary']) {
+  color: #3d5360;
+  background: #fff;
+  border-color: #dbe1e5;
+}
+:is(.button, [data-ui~='button']):is(.secondary, [data-ui~='secondary']):hover {
+  background: #f0f4f6;
+  border-color: #b5c2cc;
+}
+:is(.button, [data-ui~='button']):is(.text-button, [data-ui~='text-button']) {
+  color: #3c5769;
+  font-size: 12px;
+}
+:is(.button, [data-ui~='button']):is(.text-button, [data-ui~='text-button']):hover {
+  color: #b15e39;
+}
+:is(.button, [data-ui~='button']):is(.icon-button, [data-ui~='icon-button']) {
+  color: #78858e;
+}
+:is(.button, [data-ui~='button']):is(.icon-button, [data-ui~='icon-button']):hover {
+  background: #edf1f3;
+  color: #213644;
+}
+:is(.button, [data-ui~='button']):is(.chat-fab, [data-ui~='chat-fab']) {
+  background: #263f4f;
+  border-radius: 7px;
+  box-shadow: 0 4px 18px #1e354219;
+  bottom: 22px;
+  right: 25px;
+  font-size: 12px;
+  padding: 12px 17px;
+}
+:is(.button, [data-ui~='button']):is(.chat-fab, [data-ui~='chat-fab']) > svg:last-child {
+  display: none;
+}
+:is(.badge, [data-ui~='badge']) {
+  border-radius: 4px;
+  font-size: 10px;
+  letter-spacing: 0.1px;
+}
+:is(.badge, [data-ui~='badge']):is(.subtle, [data-ui~='subtle']) {
+  color: #6c7880;
+  background: #eef1f3;
+}
+:is(.badge, [data-ui~='badge']):is(.green, [data-ui~='green']) {
+  color: #436554;
+  background: #edf4ee;
+}
+:is(.badge, [data-ui~='badge']):is(.amber, [data-ui~='amber']) {
+  color: #97703d;
+  background: #faf2e4;
+}
+:is(.badge, [data-ui~='badge']):is(.gray, [data-ui~='gray']) {
+  color: #6f7c86;
+  background: #eff2f4;
+}
+:is(.badge, [data-ui~='badge']):is(.outline, [data-ui~='outline']) {
+  color: #8a9399;
+  border-color: #e2e5e8;
+  font-size: 9px;
+}
+:is(.muted, [data-ui~='muted']) {
+  color: #6f7f88;
+}
+:is(.tiny, [data-ui~='tiny']) {
+  font-size: 11px;
+}
+:is(.body, [data-ui~='body']) {
+  font-size: 13px;
+  line-height: 1.75;
+}
+:is(.section-title, [data-ui~='section-title']) {
+  font-size: 20px;
+  letter-spacing: -0.55px;
+  color: #2a3d48;
+  font-weight: 650;
+}
+:is(.card-title, [data-ui~='card-title']) {
+  font-size: 14px;
+  color: #314853;
+  font-weight: 650;
+}
+:is(.panel, [data-ui~='panel']) {
+  border-color: #e1e6e9;
+  border-radius: 8px;
+  box-shadow: none;
+}
+:is(.community-brief, [data-ui~='community-brief']) {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 32px;
+  background: #fff;
+  border: 1px solid #e0e5e8;
+  border-radius: 10px;
+  padding: 30px;
+  align-items: stretch;
+}
+:is(.brief-intro, [data-ui~='brief-intro']) {
+  padding: 3px 5px 3px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+:is(.brief-kicker, [data-ui~='brief-kicker']) {
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 1.65px;
+  color: #b16a47;
+}
+:is(.brief-intro, [data-ui~='brief-intro']) h2 {
+  font-size: 36px;
+  letter-spacing: -1.3px;
+  line-height: 1.18;
+  font-weight: 550;
+  color: #263d4a;
+  margin: 20px 0 15px;
+}
+:is(.brief-intro, [data-ui~='brief-intro']) p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #7a878f;
+  max-width: 315px;
+  margin: 0 0 22px;
+}
+:is(.brief-intro, [data-ui~='brief-intro']) :is(.button, [data-ui~='button']) {
+  margin-top: auto;
+  min-height: 37px;
+  font-size: 11px;
+  padding: 9px 13px;
+}
+:is(.next-event, [data-ui~='next-event']) {
+  background: #263f4e;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+  transition: background 0.2s;
+  cursor: pointer;
+  font: inherit;
+  min-width: 0;
+}
+:is(.next-event, [data-ui~='next-event']):hover {
+  background: #203745;
+}
+:is(.next-event-top, [data-ui~='next-event-top']) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  letter-spacing: 1.3px;
+  color: #bfccd3;
+}
+:is(.next-event-top, [data-ui~='next-event-top']) > span:last-child {
+  font-size: 10px;
+  letter-spacing: 0;
+  border: 1px solid #6c82905c;
+  padding: 4px 7px;
+  border-radius: 3px;
+}
+:is(.next-event-date, [data-ui~='next-event-date']) {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin: 24px 0 17px;
+}
+:is(.next-event-date, [data-ui~='next-event-date']) strong {
+  font-size: 66px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -4px;
+  color: #f0e2cb;
+}
+:is(.next-event-date, [data-ui~='next-event-date']) > div {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+:is(.next-event-date, [data-ui~='next-event-date']) > div > span:first-child {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #e9ddc6;
+}
+:is(.next-event-date, [data-ui~='next-event-date']) > div > span:last-child {
+  font-size: 10px;
+  color: #afc0ca;
+}
+:is(.next-event, [data-ui~='next-event']) h3 {
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.55px;
+  line-height: 1.3;
+  margin: 0 0 15px;
+}
+:is(.next-event-bottom, [data-ui~='next-event-bottom']) {
+  border-top: 1px solid #ffffff22;
+  padding-top: 14px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+:is(.next-event-bottom, [data-ui~='next-event-bottom']) > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: #bbccd4;
+}
+:is(.next-event-arrow, [data-ui~='next-event-arrow']) {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #ffffff33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #efe5ce;
+}
+:is(.next-event-empty, [data-ui~='next-event-empty']) {
+  cursor: default;
+  gap: 15px;
+  justify-content: center;
+}
+:is(.next-event-empty, [data-ui~='next-event-empty']) h3 {
+  font-size: 24px;
+}
+:is(.next-event-empty, [data-ui~='next-event-empty']) p {
+  color: #c6d2d8;
+  font-size: 12px;
+}
+:is(.stats-grid, [data-ui~='stats-grid']) {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-bottom: 1px solid #dfe4e7;
+  margin: 0 0 30px;
+  padding: 22px 0;
+}
+:is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']) {
+  border: 0;
+  border-right: 1px solid #e0e5e8;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 23px;
+  gap: 13px;
+  align-items: center;
+}
+:is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']):first-child {
+  padding-left: 0;
+}
+:is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']):last-child {
+  border: 0;
+  padding-right: 0;
+}
+:is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']):hover {
+  background: none;
+  box-shadow: none;
+}
+:is(.stat-icon, [data-ui~='stat-icon']) {
+  background: none !important;
+  color: #7b8b95 !important;
+  width: 30px;
+  height: 35px;
+  border-radius: 0;
+}
+:is(.stat-icon, [data-ui~='stat-icon']) svg {
+  height: 22px;
+  width: 22px;
+}
+:is(.stat-label, [data-ui~='stat-label']) {
+  font-size: 11px;
+  color: #6e7d86;
+}
+:is(.stat-value, [data-ui~='stat-value']) {
+  font-size: 26px;
+  color: #263d4b;
+  font-weight: 550;
+  margin: 3px 0;
+  letter-spacing: -0.7px;
+}
+:is(.stat-hint, [data-ui~='stat-hint']) {
+  font-size: 10px;
+  color: #8d999f;
+}
+:is(.stat-arrow, [data-ui~='stat-arrow']) {
+  display: none;
+}
+:is(.home-columns, [data-ui~='home-columns']) {
+  grid-template-columns: minmax(0, 1.95fr) minmax(240px, 1fr);
+  gap: 27px;
+}
+:is(.home-aside, [data-ui~='home-aside']) :is(.section-heading, [data-ui~='section-heading']) {
+  height: 51px;
+}
+:is(.event-card, [data-ui~='event-card']) {
+  border-color: #e0e5e8;
+  border-radius: 7px;
+  box-shadow: none;
+}
+:is(.event-card, [data-ui~='event-card']):hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #b8c8d2;
+}
+:is(.event-art, [data-ui~='event-art']) {
+  height: 170px;
+  background: #d9e2e8;
+  color: #2f4c60;
+  padding: 19px 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 0;
+}
+:is(.event-art, [data-ui~='event-art']):is(.forest, [data-ui~='forest']) {
+  background: #dce6ec;
+  color: #314d60;
+}
+:is(.event-art, [data-ui~='event-art']):is(.sand, [data-ui~='sand']) {
+  background: #eee4cf;
+  color: #7b623e;
+}
+:is(.event-art, [data-ui~='event-art']):is(.peach, [data-ui~='peach']) {
+  background: #f1dfd7;
+  color: #9a5c43;
+}
+:is(.event-art, [data-ui~='event-art']):is(.sage, [data-ui~='sage']) {
+  background: #dfe7df;
+  color: #4d6a57;
+}
+:is(.event-art, [data-ui~='event-art']):is(.blue, [data-ui~='blue']) {
+  background: #dee2eb;
+  color: #536785;
+}
+:is(.poster-label, [data-ui~='poster-label']) {
+  font-size: 7px;
+  letter-spacing: 1.6px;
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.7;
+}
+:is(.poster-heading, [data-ui~='poster-heading']) {
+  font-family: Georgia, serif;
+  font-size: 29px;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin: auto 0;
+  color: inherit;
+}
+:is(.poster-footer, [data-ui~='poster-footer']) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 6px;
+  letter-spacing: 1.8px;
+  color: inherit;
+  opacity: 0.65;
+}
+:is(.event-date, [data-ui~='event-date']) {
+  left: auto;
+  right: 14px;
+  top: 13px;
+  bottom: auto;
+  background: #fffefbe8;
+  border-radius: 4px;
+  width: 38px;
+  height: 41px;
+  box-shadow: none;
+}
+:is(.event-date, [data-ui~='event-date']) > span:first-child,
+:is(.event-date, [data-ui~='event-date']) > [data-ui]:first-child {
+  font-size: 16px;
+  color: #304a5a;
+}
+:is(.event-date, [data-ui~='event-date']) > span:last-child,
+:is(.event-date, [data-ui~='event-date']) > [data-ui]:last-child {
+  font-size: 7px;
+  color: #7c898f;
+}
+:is(.event-card-body, [data-ui~='event-card-body']) {
+  padding: 17px;
+  gap: 10px;
+}
+:is(.event-title, [data-ui~='event-title']) {
+  font-size: 17px;
+  color: #293f4c;
+  font-weight: 650;
+}
+:is(.event-meta, [data-ui~='event-meta']) {
+  font-size: 11px;
+  color: #78878f;
+}
+:is(.event-meta, [data-ui~='event-meta']) svg {
+  color: #8c9ca4;
+}
+:is(.event-price, [data-ui~='event-price']) {
+  font-size: 11px;
+  color: #846640;
+}
+:is(.event-price, [data-ui~='event-price']):is(.free, [data-ui~='free']) {
+  color: #526e59;
+}
+:is(.event-card-footer, [data-ui~='event-card-footer']) {
+  border-color: #e7ecee;
+  gap: 7px;
+}
+:is(.event-card-footer, [data-ui~='event-card-footer']) > :is(.tiny, [data-ui~='tiny']) {
+  font-size: 9px;
+}
+:is(.event-card-footer, [data-ui~='event-card-footer'])
+  :is(.text-button, [data-ui~='text-button']) {
+  font-size: 10px;
+}
+:is(.notice-preview, [data-ui~='notice-preview']) {
+  padding: 20px 18px 12px;
+}
+:is(.notice-snippet, [data-ui~='notice-snippet']) {
+  gap: 10px;
+  padding-bottom: 20px;
+}
+:is(.notice-snippet, [data-ui~='notice-snippet']):is(.with-border, [data-ui~='with-border']) {
+  border-color: #e9ecef;
+  padding-top: 20px;
+}
+:is(.notice-snippet, [data-ui~='notice-snippet']) :is(.card-title, [data-ui~='card-title']) {
+  font-size: 13px;
+  line-height: 1.6;
+}
+:is(.notice-excerpt, [data-ui~='notice-excerpt']) {
+  font-size: 11px;
+  color: #87929a;
+}
+:is(.notice-link, [data-ui~='notice-link']) {
+  font-size: 10px !important;
+  border-color: #e9ecef !important;
+}
+:is(.assistant-teaser, [data-ui~='assistant-teaser']) {
+  background: #edf1f4;
+  border-color: #dfe6eb;
+  border-radius: 7px;
+  padding: 19px;
+  gap: 12px;
+}
+:is(.assistant-icon, [data-ui~='assistant-icon']) {
+  background: #dfe7ec;
+  color: #617b8d;
+  border-radius: 7px;
+}
+:is(.assistant-teaser, [data-ui~='assistant-teaser']) :is(.card-title, [data-ui~='card-title']) {
+  font-size: 12px;
+}
+:is(.assistant-teaser, [data-ui~='assistant-teaser']) :is(.body, [data-ui~='body']) {
+  font-size: 11px;
+}
+:is(.assistant-teaser, [data-ui~='assistant-teaser']) :is(.text-button, [data-ui~='text-button']) {
+  font-size: 11px;
+}
+:is(.footer, [data-ui~='footer']) {
+  color: #939da3;
+  font-size: 10px;
+  border-color: #e0e5e9;
+}
+:is(.footer, [data-ui~='footer']) > span:last-child {
+  color: #9ba4aa;
+}
+:is(.events-grid, [data-ui~='events-grid']) :is(.event-art, [data-ui~='event-art']) {
+  height: 190px;
+}
+:is(.events-grid, [data-ui~='events-grid']) :is(.poster-heading, [data-ui~='poster-heading']) {
+  font-size: 35px;
+}
+:is(.events-grid, [data-ui~='events-grid'])
+  :is(.event-card-footer, [data-ui~='event-card-footer'])
+  :is(.tiny, [data-ui~='tiny']) {
+  font-size: 10px;
+}
+:is(.events-grid, [data-ui~='events-grid'])
+  :is(.event-card-footer, [data-ui~='event-card-footer'])
+  :is(.text-button, [data-ui~='text-button']) {
+  font-size: 11px;
+}
+:is(.search-field, [data-ui~='search-field']) {
+  border-color: #dce3e8;
+  border-radius: 6px;
+  background: #fff;
+  color: #81909a;
+  padding: 10px 14px;
+}
+:is(.search-input, [data-ui~='search-input']) {
+  font-size: 13px;
+  color: #314b5e;
+}
+:is(.filter-count, [data-ui~='filter-count']) {
+  color: #7e8d97;
+}
+:is(.events-toolbar, [data-ui~='events-toolbar']) {
+  margin-bottom: 20px;
+}
+:is(.origin-tabs, [data-ui~='origin-tabs']) {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+:is(.origin-tabs-list, [data-ui~='origin-tabs-list']) {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  border-bottom: 1px solid #dce3e8;
+  padding: 0;
+  scrollbar-width: thin;
+  max-width: 100%;
+  white-space: nowrap;
+}
+:is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger']) {
+  flex-shrink: 0;
+  background: transparent;
+  color: #74848f;
+  padding: 13px 15px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+:is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger']):hover {
+  color: #304b5c;
+  background: #edf2f4;
+}
+:is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger'])[data-state='active'] {
+  color: #ae5935;
+  border-bottom-color: #b7633e;
+  font-weight: 650;
+}
+:is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger']):focus-visible {
+  outline: 2px solid #b47b52;
+  outline-offset: -3px;
+  border-radius: 3px;
+}
+:is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger']):disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+:is(.origin-tabs-content, [data-ui~='origin-tabs-content']) {
+  outline: none;
+  padding-top: 22px;
+  min-width: 0;
+}
+:is(.origin-tabs-content, [data-ui~='origin-tabs-content']):focus-visible {
+  outline: 2px solid #b8c8d2;
+  outline-offset: 5px;
+}
+:is(.results-count, [data-ui~='results-count']) {
+  font-size: 11px;
+  color: #89959e;
+  margin: 0 0 17px;
+}
+:is(.admin-origin-tabs, [data-ui~='admin-origin-tabs']) {
+  margin-top: 25px;
+}
+:is(.admin-demo, [data-ui~='admin-demo']) {
+  background: #f1f4f6;
+  border-color: #dfe6eb;
+  color: #788e9b;
+  border-radius: 6px;
+  font-size: 11px;
+}
+:is(.admin-stat, [data-ui~='admin-stat']) {
+  color: #879caa;
+}
+:is(.admin-stat, [data-ui~='admin-stat']) :is(.stat-value, [data-ui~='stat-value']) {
+  font-size: 29px;
+}
+:is(.table-title, [data-ui~='table-title']) {
+  color: #3b5669;
+  font-size: 12px;
+}
+table {
+  color: #748795;
+  font-size: 12px;
+}
+th {
+  color: #8c9aa4;
+  font-size: 9px;
+  letter-spacing: 0.7px;
+}
+td,
+th {
+  border-color: #e4eaee;
+}
+:is(.capacity-bar, [data-ui~='capacity-bar']) {
+  background: #e8eef2;
+}
+:is(.capacity-bar, [data-ui~='capacity-bar']) span {
+  background: #8aa5b6;
+}
+:is(.table-icon, [data-ui~='table-icon']) {
+  border-radius: 6px;
+  background: #e5edf1;
+  color: #6d889b;
+}
+:is(.knowledge-row, [data-ui~='knowledge-row']) {
+  border-color: #e6ebef;
+}
+:is(.keyword-label, [data-ui~='keyword-label']) {
+  color: #8b9ca6;
+}
+:is(.input, [data-ui~='input']) {
+  color: #344e5e;
+  background: #fff;
+  border-color: #dbe3e9;
+  border-radius: 6px;
+  font-size: 13px;
+}
+:is(.input, [data-ui~='input']):focus {
+  border-color: #869fae;
+  box-shadow: 0 0 0 3px #edf2f5;
+}
+:is(.field-label, [data-ui~='field-label']) {
+  font-size: 12px;
+  color: #627785;
+}
+:is(.info-box, [data-ui~='info-box']) {
+  background: #faf5eb;
+  color: #977b4c;
+  border-radius: 5px;
+}
+:is(.registration-date, [data-ui~='registration-date']) {
+  background: #e6edf2;
+  color: #5c778b;
+  border-radius: 6px;
+}
+:is(.registration-info, [data-ui~='registration-info']) :is(.tiny, [data-ui~='tiny']) {
+  color: #83939d;
+}
+:is(.notifications-panel, [data-ui~='notifications-panel']),
+:is(.notice-full, [data-ui~='notice-full']) {
+  border-radius: 7px;
+}
+:is(.notification-row, [data-ui~='notification-row']):is(.unread, [data-ui~='unread']) {
+  background: #f3f6f8;
+}
+:is(.notification-row, [data-ui~='notification-row']) {
+  border-color: #e5ebef;
+}
+:is(.notification-icon, [data-ui~='notification-icon']) {
+  background: #e6edf2;
+  color: #7a92a2;
+  border-radius: 6px;
+}
+:is(.unread-dot, [data-ui~='unread-dot']) {
+  background: #bf7851;
+}
+:is(.chat-panel, [data-ui~='chat-panel']) {
+  border-radius: 7px;
+}
+:is(.chat-header, [data-ui~='chat-header']) {
+  border-color: #e1e8ed;
+}
+:is(.chat-welcome, [data-ui~='chat-welcome']) :is(.section-title, [data-ui~='section-title']) {
+  font-size: 21px;
+}
+:is(.welcome-spark, [data-ui~='welcome-spark']) {
+  background: #edf2f5;
+  border-color: #e1e8ee;
+  color: #6b879a;
+  border-radius: 12px;
+}
+:is(.button, [data-ui~='button']):is(.suggestion, [data-ui~='suggestion']) {
+  background: #fff;
+  border-color: #dde6ec;
+  color: #6a8191;
+  font-size: 11px;
+}
+:is(.button, [data-ui~='button']):is(.suggestion, [data-ui~='suggestion']):hover {
+  background: #eff4f7;
+}
+:is(.message-bubble, [data-ui~='message-bubble']) {
+  background: #edf2f5;
+  color: #456172;
+  font-size: 13px;
+  border-radius: 0 7px 7px 7px;
+}
+:is(.user, [data-ui~='user']) :is(.message-bubble, [data-ui~='message-bubble']) {
+  background: #294a60;
+  color: #f1f5f7;
+  border-radius: 7px 0 7px 7px;
+}
+:is(.message-avatar, [data-ui~='message-avatar']) {
+  background: #e5edf2;
+  color: #6e8a9c;
+  border-radius: 6px;
+}
+:is(.message-source, [data-ui~='message-source']) {
+  color: #899eac;
+  border-color: #dce6ed;
+  font-size: 9px;
+}
+:is(.chat-composer, [data-ui~='chat-composer']) {
+  border-color: #dfe8ee;
+}
+:is(.composer-input, [data-ui~='composer-input']) {
+  background: #fff;
+  border-color: #d7e2ea;
+  border-radius: 6px;
+}
+:is(.chat-help, [data-ui~='chat-help']) {
+  color: #8ba1ae;
+}
+:is(.human-help, [data-ui~='human-help']) {
+  background: #edf2f5;
+  border-color: #dfe8ee;
+  color: #8ba1ae;
+  border-radius: 7px;
+}
+:is(.chat-help, [data-ui~='chat-help']) :is(.row, [data-ui~='row']) {
+  color: #6c8799;
+}
+:is(.modal, [data-ui~='modal']) {
+  border-radius: 9px;
+}
+:is(.modal-title, [data-ui~='modal-title']) {
+  color: #314b5c;
+  font-size: 25px;
+}
+:is(.detail-meta, [data-ui~='detail-meta']) {
+  color: #8094a2;
+}
+:is(.detail-description, [data-ui~='detail-description']) {
+  color: #667c8a;
+}
+:is(.modal-art, [data-ui~='modal-art']) :is(.event-art, [data-ui~='event-art']) {
+  height: 205px;
+}
+:is(.modal-art, [data-ui~='modal-art']) :is(.poster-heading, [data-ui~='poster-heading']) {
+  font-size: 39px;
+}
+:is(.modal-art, [data-ui~='modal-art']) :is(.poster-footer, [data-ui~='poster-footer']) {
+  padding-right: 8px;
+}
+:is(.modal-art, [data-ui~='modal-art']) :is(.poster-label, [data-ui~='poster-label']) {
+  padding-right: 40px;
+}
+:is(.ticket-code, [data-ui~='ticket-code']) {
+  background: #f3f6f8;
+  border-color: #acbfcb;
+}
+:is(.ticket-code, [data-ui~='ticket-code']) > span:last-child,
+:is(.ticket-code, [data-ui~='ticket-code']) > [data-ui]:last-child {
+  color: #527188;
+}
+:is(.ticket-icon, [data-ui~='ticket-icon']) {
+  color: #7797aa;
+}
+:is(.empty-icon, [data-ui~='empty-icon']) {
+  background: #edf2f5;
+  color: #7793a5;
+}
+:is(.empty-title, [data-ui~='empty-title']) {
+  color: #355468;
+}
+:is(.toast, [data-ui~='toast']) {
+  border-color: #d4e1e9;
+  color: #4c6d82;
+  background: #fff;
+}
+:is(.login-story, [data-ui~='login-story']) {
+  background: #edf1f4;
+}
+:is(.login-headline, [data-ui~='login-headline']) {
+  color: #2d495d;
+  font-size: 42px;
+  font-weight: 550;
+}
+:is(.login-title, [data-ui~='login-title']) {
+  color: #2e4a5f;
+}
+:is(.login-description, [data-ui~='login-description']) {
+  color: #7a8f9e;
+}
+:is(.login-art, [data-ui~='login-art']) {
+  border-radius: 7px;
+  height: 225px;
+}
+:is(.login-art, [data-ui~='login-art']) :is(.hero-art, [data-ui~='hero-art']) {
+  background: #2d4859;
+  height: 225px;
+  color: #e5d9c3;
+  padding: 26px;
+}
+:is(.login-art, [data-ui~='login-art']) :is(.poster-heading, [data-ui~='poster-heading']) {
+  font-size: 41px;
+}
+:is(.login-art-label, [data-ui~='login-art-label']) {
+  display: none;
+}
+:is(.login-form-side, [data-ui~='login-form-side']) {
+  background: #fafbfc;
+}
+:is(.demo-logins, [data-ui~='demo-logins']) {
+  background: #f0f4f6;
+  border-color: #dfe7ed;
+  border-radius: 6px;
+}
+:is(.login-disclaimer, [data-ui~='login-disclaimer']) {
+  color: #8b9ca6;
+}
+@media (min-width: 1550px) {
+  :is(.community-brief, [data-ui~='community-brief']) {
+    padding: 35px;
+    gap: 50px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) h2 {
+    font-size: 44px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) p {
+    font-size: 14px;
+    max-width: 360px;
+  }
+  :is(.next-event-date, [data-ui~='next-event-date']) strong {
+    font-size: 80px;
+  }
+  :is(.next-event, [data-ui~='next-event']) h3 {
+    font-size: 29px;
+  }
+  :is(.next-event-date, [data-ui~='next-event-date']) > div > span:last-child {
+    font-size: 12px;
+  }
+  :is(.event-art, [data-ui~='event-art']) {
+    height: 195px;
+  }
+  :is(.poster-heading, [data-ui~='poster-heading']) {
+    font-size: 35px;
+  }
+}
+@media (max-width: 1180px) {
+  :is(.sidebar, [data-ui~='sidebar']) {
+    width: 218px;
+    padding: 28px 17px;
+  }
+  :is(.workspace, [data-ui~='workspace']) {
+    margin-left: 218px;
+  }
+  :is(.main-content, [data-ui~='main-content']) {
+    padding: 28px 25px;
+  }
+  :is(.community-brief, [data-ui~='community-brief']) {
+    padding: 23px;
+    gap: 23px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) h2 {
+    font-size: 31px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) p {
+    font-size: 11px;
+  }
+  :is(.next-event, [data-ui~='next-event']) {
+    padding: 21px;
+  }
+  :is(.next-event-date, [data-ui~='next-event-date']) strong {
+    font-size: 57px;
+  }
+  :is(.next-event, [data-ui~='next-event']) h3 {
+    font-size: 21px;
+  }
+  :is(.home-columns, [data-ui~='home-columns']) {
+    grid-template-columns: 1fr;
+  }
+  :is(.home-aside, [data-ui~='home-aside']) {
+    grid-template-columns: 1.3fr 1fr;
+  }
+  :is(.home-aside, [data-ui~='home-aside']) :is(.section-heading, [data-ui~='section-heading']) {
+    display: none;
+  }
+  :is(.stats-grid, [data-ui~='stats-grid']) {
+    padding: 21px 0;
+  }
+  :is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']) {
+    padding: 0 14px;
+    gap: 9px;
+  }
+  :is(.stat-hint, [data-ui~='stat-hint']) {
+    font-size: 9px;
+  }
+  :is(.poster-heading, [data-ui~='poster-heading']) {
+    font-size: 32px;
+  }
+}
+@media (max-width: 850px) {
+  :is(.sidebar, [data-ui~='sidebar']) {
+    width: 195px;
+    padding: 25px 12px;
+  }
+  :is(.workspace, [data-ui~='workspace']) {
+    margin-left: 195px;
+  }
+  :is(.button, [data-ui~='button']):is(.nav-item, [data-ui~='nav-item']) {
+    font-size: 11px;
+    gap: 8px;
+  }
+  :is(.main-content, [data-ui~='main-content']) {
+    padding: 24px 20px;
+  }
+  :is(.topbar, [data-ui~='topbar']) {
+    padding: 0 20px;
+  }
+  :is(.community-brief, [data-ui~='community-brief']) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) h2 {
+    font-size: 32px;
+    margin: 14px 0 10px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) h2 br {
+    display: none;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) p {
+    max-width: 100%;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  :is(.next-event, [data-ui~='next-event']) {
+    padding: 20px;
+  }
+  :is(.next-event-date, [data-ui~='next-event-date']) {
+    margin: 16px 0 12px;
+  }
+  :is(.next-event-date, [data-ui~='next-event-date']) strong {
+    font-size: 58px;
+  }
+  :is(.next-event, [data-ui~='next-event']) h3 {
+    font-size: 23px;
+  }
+  :is(.next-event-bottom, [data-ui~='next-event-bottom']) {
+    padding-top: 12px;
+  }
+  :is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']) {
+    flex-direction: row;
+  }
+  :is(.stat-icon, [data-ui~='stat-icon']) {
+    display: none;
+  }
+  :is(.stat-label, [data-ui~='stat-label']) {
+    font-size: 10px;
+  }
+  :is(.page-title, [data-ui~='page-title']) {
+    font-size: 28px;
+  }
+  :is(.home-aside, [data-ui~='home-aside']) {
+    grid-template-columns: 1fr 1fr;
+  }
+  :is(.event-art, [data-ui~='event-art']) {
+    padding: 17px;
+  }
+  :is(.poster-heading, [data-ui~='poster-heading']) {
+    font-size: 28px;
+  }
+  :is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger']) {
+    font-size: 11px;
+    padding: 12px 11px;
+  }
+  :is(.community-name, [data-ui~='community-name']) {
+    font-size: 10px;
+  }
+  :is(.community-switch, [data-ui~='community-switch']) :is(.tiny, [data-ui~='tiny']) {
+    font-size: 9px;
+  }
+}
+@media (max-width: 650px) {
+  :is(.sidebar, [data-ui~='sidebar']) {
+    width: 240px;
+  }
+  :is(.workspace, [data-ui~='workspace']) {
+    margin-left: 0;
+  }
+  :is(.topbar, [data-ui~='topbar']) {
+    height: 64px;
+    padding: 0 13px;
+  }
+  :is(.main-content, [data-ui~='main-content']) {
+    padding: 25px 18px 75px;
+  }
+  :is(.page-title, [data-ui~='page-title']) {
+    font-size: 29px;
+    line-height: 1.3;
+  }
+  :is(.page-subtitle, [data-ui~='page-subtitle']) {
+    font-size: 12px;
+  }
+  :is(.page-heading, [data-ui~='page-heading']) {
+    margin-bottom: 23px;
+  }
+  :is(.eyebrow, [data-ui~='eyebrow']) {
+    font-size: 8px;
+  }
+  :is(.community-brief, [data-ui~='community-brief']) {
+    padding: 21px;
+    gap: 21px;
+    border-radius: 7px;
+  }
+  :is(.brief-kicker, [data-ui~='brief-kicker']) {
+    font-size: 8px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) h2 {
+    font-size: 32px;
+    letter-spacing: -1px;
+    margin: 14px 0 12px;
+    max-width: 240px;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) p {
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  :is(.brief-intro, [data-ui~='brief-intro']) :is(.button, [data-ui~='button']) {
+    font-size: 11px;
+  }
+  :is(.next-event, [data-ui~='next-event']) {
+    padding: 21px;
+    min-height: 240px;
+  }
+  :is(.next-event-top, [data-ui~='next-event-top']) {
+    font-size: 8px;
+  }
+  :is(.next-event, [data-ui~='next-event']) h3 {
+    font-size: 24px;
+  }
+  :is(.next-event-date, [data-ui~='next-event-date']) strong {
+    font-size: 62px;
+  }
+  :is(.next-event-bottom, [data-ui~='next-event-bottom']) > span:first-child {
+    font-size: 10px;
+  }
+  :is(.stats-grid, [data-ui~='stats-grid']) {
+    padding: 20px 0;
+    margin-bottom: 27px;
+  }
+  :is(.button, [data-ui~='button']):is(.stat-card, [data-ui~='stat-card']) {
+    padding: 0 11px;
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+  }
+  :is(.stat-label, [data-ui~='stat-label']) {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+  :is(.stat-value, [data-ui~='stat-value']) {
+    font-size: 26px;
+    margin: 5px 0 0;
+  }
+  :is(.stat-hint, [data-ui~='stat-hint']) {
+    display: none;
+  }
+  :is(.section-title, [data-ui~='section-title']) {
+    font-size: 19px;
+  }
+  :is(.section-heading, [data-ui~='section-heading']) :is(.body, [data-ui~='body']) {
+    font-size: 11px;
+  }
+  :is(.home-aside, [data-ui~='home-aside']) {
+    grid-template-columns: 1fr;
+  }
+  :is(.home-aside, [data-ui~='home-aside']) :is(.section-heading, [data-ui~='section-heading']) {
+    display: flex;
+    height: auto;
+  }
+  :is(.featured-events, [data-ui~='featured-events']) :is(.event-card, [data-ui~='event-card']) {
+    grid-template-columns: 105px minmax(0, 1fr);
+  }
+  :is(.featured-events, [data-ui~='featured-events']) :is(.event-art, [data-ui~='event-art']) {
+    height: 100%;
+    min-height: 214px;
+    padding: 15px 11px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.poster-heading, [data-ui~='poster-heading']) {
+    font-size: 23px;
+    line-height: 1.1;
+    letter-spacing: -0.8px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.poster-label, [data-ui~='poster-label']) {
+    font-size: 5px;
+    letter-spacing: 0.7px;
+    padding-right: 0;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.poster-footer, [data-ui~='poster-footer']) {
+    font-size: 5px;
+    letter-spacing: 1px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.poster-footer, [data-ui~='poster-footer'])
+    svg {
+    width: 18px;
+  }
+  :is(.featured-events, [data-ui~='featured-events']) :is(.event-date, [data-ui~='event-date']) {
+    display: none;
+  }
+  :is(.featured-events, [data-ui~='featured-events']) :is(.event-title, [data-ui~='event-title']) {
+    font-size: 16px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.event-card-body, [data-ui~='event-card-body']) {
+    padding: 15px 13px;
+  }
+  :is(.featured-events, [data-ui~='featured-events']) :is(.event-meta, [data-ui~='event-meta']) {
+    font-size: 10px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.event-card-footer, [data-ui~='event-card-footer']) {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.event-card-footer, [data-ui~='event-card-footer'])
+    :is(.text-button, [data-ui~='text-button']) {
+    font-size: 10px;
+  }
+  :is(.featured-events, [data-ui~='featured-events'])
+    :is(.event-card-footer, [data-ui~='event-card-footer'])
+    :is(.tiny, [data-ui~='tiny']) {
+    font-size: 9px;
+  }
+  :is(.events-grid, [data-ui~='events-grid']) :is(.event-art, [data-ui~='event-art']) {
+    height: 190px;
+    padding: 23px;
+  }
+  :is(.events-grid, [data-ui~='events-grid']) :is(.poster-heading, [data-ui~='poster-heading']) {
+    font-size: 36px;
+  }
+  :is(.events-grid, [data-ui~='events-grid']) :is(.event-card-body, [data-ui~='event-card-body']) {
+    padding: 21px;
+  }
+  :is(.events-grid, [data-ui~='events-grid']) :is(.event-title, [data-ui~='event-title']) {
+    font-size: 20px;
+  }
+  :is(.events-grid, [data-ui~='events-grid'])
+    :is(.event-card-footer, [data-ui~='event-card-footer']) {
+    flex-wrap: wrap;
+  }
+  :is(.origin-tabs-list, [data-ui~='origin-tabs-list']) {
+    gap: 0;
+  }
+  :is(.origin-tabs-trigger, [data-ui~='origin-tabs-trigger']) {
+    font-size: 11px;
+    padding: 13px 12px;
+  }
+  :is(.origin-tabs-content, [data-ui~='origin-tabs-content']) {
+    padding-top: 20px;
+  }
+  :is(.events-toolbar, [data-ui~='events-toolbar']) :is(.button, [data-ui~='button']) {
+    font-size: 10px;
+  }
+  :is(.search-input, [data-ui~='search-input']) {
+    font-size: 13px;
+  }
+  :is(.notice-snippet, [data-ui~='notice-snippet']) :is(.card-title, [data-ui~='card-title']) {
+    font-size: 14px;
+  }
+  :is(.notice-excerpt, [data-ui~='notice-excerpt']) {
+    font-size: 12px;
+  }
+  :is(.assistant-teaser, [data-ui~='assistant-teaser']) :is(.card-title, [data-ui~='card-title']) {
+    font-size: 13px;
+  }
+  :is(.button, [data-ui~='button']):is(.chat-fab, [data-ui~='chat-fab']) {
+    font-size: 11px;
+    bottom: 17px;
+    right: 18px;
+    padding: 11px 14px;
+  }
+  :is(.chat-welcome, [data-ui~='chat-welcome']) :is(.section-title, [data-ui~='section-title']) {
+    font-size: 18px;
+  }
+  :is(.message-bubble, [data-ui~='message-bubble']) {
+    font-size: 12px;
+  }
+  :is(.button, [data-ui~='button']):is(.suggestion, [data-ui~='suggestion']) {
+    font-size: 10px;
+  }
+  :is(.chat-composer, [data-ui~='chat-composer']) :is(.tiny, [data-ui~='tiny']) {
+    font-size: 8px;
+  }
+  :is(.login-headline, [data-ui~='login-headline']) {
+    font-size: 31px;
+  }
+  :is(.login-story, [data-ui~='login-story']) {
+    padding: 26px;
+  }
+  :is(.login-description, [data-ui~='login-description']) {
+    font-size: 12px;
+  }
+  :is(.login-title, [data-ui~='login-title']) {
+    font-size: 26px;
+  }
+  :is(.login-form-side, [data-ui~='login-form-side']) {
+    padding: 29px 26px;
+  }
+  :is(.admin-stat, [data-ui~='admin-stat']) :is(.stat-value, [data-ui~='stat-value']) {
+    font-size: 27px;
+  }
+  :is(.footer, [data-ui~='footer']) {
+    font-size: 9px;
+  }
+}
