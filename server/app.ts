@@ -60,13 +60,22 @@ const session = async (res: Response, user: User) => {
     path: '/',
   });
 };
-const loginSchema = z.object({
+const registrationSchema = z.object({
   email: z
     .string()
     .email()
     .max(200)
     .transform((v) => v.toLowerCase().trim()),
   password: z.string().min(8).max(128),
+});
+const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .transform((value) => value.toLowerCase()),
+  password: z.string().min(1).max(128),
 });
 async function limitAuth(req: Request, res: Response, next: NextFunction) {
   try {
@@ -86,21 +95,28 @@ app.get('/api/health', async (_req, res) => {
 });
 app.post('/api/auth/login', limitAuth, async (req, res) => {
   const data = loginSchema.parse(req.body);
-  const accountLimit = await consumeAttempt('login-account', data.email, 15);
+  const email = data.email === 'admin' ? 'admin@comunia.local' : data.email;
+  const accountLimit = await consumeAttempt('login-account', email, 15);
   if (!accountLimit.allowed) {
     res.setHeader('Retry-After', accountLimit.retryAfter);
     throw fail('Muitas tentativas. Aguarde alguns minutos.', 429);
   }
-  const { rows } = await query('SELECT * FROM users WHERE email=$1', [data.email]);
-  if (!rows[0] || !verify(data.password, rows[0].password_hash)) {
-    throw fail('E-mail ou senha incorretos.', 401);
+  const { rows } = await query('SELECT * FROM users WHERE email=$1', [email]);
+  if (
+    !rows[0] ||
+    (data.email === 'admin' && rows[0].role !== 'admin') ||
+    !verify(data.password, rows[0].password_hash)
+  ) {
+    throw fail('Login ou senha incorretos.', 401);
   }
   const { password_hash, ...user } = rows[0];
   await session(res, user);
   res.json(user);
 });
 app.post('/api/auth/register', limitAuth, async (req, res) => {
-  const data = loginSchema.extend({ name: z.string().trim().min(2).max(80) }).parse(req.body);
+  const data = registrationSchema
+    .extend({ name: z.string().trim().min(2).max(80) })
+    .parse(req.body);
   const { rows } = await query(
     'INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3) RETURNING id,name,email,role',
     [data.name, data.email, hash(data.password)],

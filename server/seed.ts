@@ -3,7 +3,9 @@ import { URL } from 'node:url';
 import { pool, query } from './db.js';
 import { hash } from './security.js';
 if (process.env.VERCEL === '1' || process.env.NODE_ENV === 'production') {
-  throw new Error('Seed de contas públicas permitido apenas no ambiente local. Use a migração de nuvem documentada.');
+  throw new Error(
+    'Seed de contas públicas permitido apenas no ambiente local. Use a migração de nuvem documentada.',
+  );
 }
 await query(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
 for (const [name, email, role] of [
@@ -12,7 +14,7 @@ for (const [name, email, role] of [
 ]) {
   await query(
     'INSERT INTO users(name,email,role,password_hash) VALUES($1,$2,$3,$4) ON CONFLICT(email) DO NOTHING',
-    [name, email, role, hash('Comunia@123')],
+    [name, email, role, hash(role === 'admin' ? 'admin' : 'Comunia@123')],
   );
 }
 if (!(await query('SELECT 1 FROM events LIMIT 1')).rowCount) {

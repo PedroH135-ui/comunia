@@ -804,7 +804,11 @@ function Login({ onLogin }: { onLogin: (u: User) => void }) {
               placeholder="Como podemos chamar você?"
             />
           )}
-          <Field label="E-mail" value={email} onChange={setEmail} />
+          <Field
+            label={register ? 'E-mail' : 'E-mail ou usuário'}
+            value={email}
+            onChange={setEmail}
+          />
           <Field label="Senha" value={password} onChange={setPassword} secure />
           {error && (
             <T className="form-error" accessibilityRole="alert">
@@ -833,7 +837,7 @@ function Login({ onLogin }: { onLogin: (u: User) => void }) {
           {!cloudDeployment && (
             <Box className="demo-logins">
               <T className="field-label">EXPLORE A V1</T>
-              <T className="tiny muted">Contas fictícias prontas para testar. Senha: Comunia@123</T>
+              <T className="tiny muted">Membro: Comunia@123 · Administrador: admin</T>
               <Box className="row">
                 <Button
                   variant="secondary"
@@ -848,8 +852,8 @@ function Login({ onLogin }: { onLogin: (u: User) => void }) {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setEmail('admin@comunia.local');
-                    setPassword('Comunia@123');
+                    setEmail('admin');
+                    setPassword('admin');
                     setRegister(false);
                   }}
                 >
