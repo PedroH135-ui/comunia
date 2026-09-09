@@ -24,7 +24,7 @@ import {
   Send,
   Settings2,
   ShieldCheck,
-  Church,
+  Flame,
   List,
   Grid2X2,
   Ticket,
@@ -40,6 +40,7 @@ import {
   Mail,
   Flower2,
   Sun,
+  Instagram,
   Music,
   HandHeart,
   LoaderCircle,
@@ -59,6 +60,13 @@ import {
   type Knowledge,
   type Overview,
 } from './api';
+
+const COMMUNITY = {
+  name: 'Comunidade Koinonia',
+  tagline: 'Uma família para pertencer',
+  instagram: 'comunidadekoinonia',
+  instagramUrl: 'https://www.instagram.com/comunidadekoinonia/',
+};
 
 // Shared layout and input primitives use React Native for Web. CSS is the web presentation layer.
 const Box = ({
@@ -172,7 +180,7 @@ const Status = ({ status }: { status: string }) => (
 const Brand = ({ small = false }: { small?: boolean }) => (
   <Box className={`brand ${small ? 'small' : ''}`}>
     <Box className="brand-symbol">
-      <Church size={23} />
+      <Flame size={23} />
     </Box>
     <T className="brand-name">
       Comun<T className="brand-ia">IA</T>
@@ -199,14 +207,14 @@ function Art({
   return (
     <Box className={`event-art ${theme} ${hero ? 'hero-art' : ''}`}>
       <div className="poster-label">
-        {hero ? 'COMUNIDADE HORIZONTE' : 'AGENDA / ' + category.toUpperCase()}
+        {hero ? 'COMUNIDADE KOINONIA' : 'AGENDA / ' + category.toUpperCase()}
       </div>
       <div className="poster-heading">
         {hero ? (
           <>
-            A vida acontece
+            Uma família
             <br />
-            em comunidade.
+            para pertencer.
           </>
         ) : category === 'Retiro' ? (
           <>
@@ -241,7 +249,7 @@ function Art({
         )}
       </div>
       <div className="poster-footer">
-        <span>HORIZONTE</span>
+        <span>KOINONIA</span>
         <ArrowUpRight size={27} />
       </div>
     </Box>
@@ -456,11 +464,11 @@ export default function App() {
         <Brand />
         <Box className="community-switch">
           <Box className="community-icon">
-            <Sun size={20} />
+            <Flame size={20} />
           </Box>
           <Box>
-            <T className="community-name">Comunidade Horizonte</T>
-            <T className="tiny muted">Um lugar para pertencer</T>
+            <T className="community-name">{COMMUNITY.name}</T>
+            <T className="tiny muted">{COMMUNITY.tagline}</T>
           </Box>
         </Box>
         <T className="nav-caption">{user ? 'MINHA COMUNIDADE' : 'CONHEÇA A COMUNIDADE'}</T>
@@ -492,7 +500,7 @@ export default function App() {
           <Box className="sidebar-note">
             <Heart size={20} />
             <T className="sidebar-note-title">
-              Comunidade Horizonte
+              {COMMUNITY.name}
               <br />
               Portal dos membros
             </T>
@@ -500,6 +508,14 @@ export default function App() {
               Eventos, informações e<br />
               atendimento em um só lugar.
             </T>
+            <a
+              className="community-social-link"
+              href={COMMUNITY.instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Instagram size={14} /> @{COMMUNITY.instagram}
+            </a>
           </Box>
           <Box className="local-indicator">
             <span />
@@ -578,13 +594,13 @@ export default function App() {
                     : 'PORTAS ABERTAS'
                   : page === 'admin'
                     ? 'PAINEL DA COMUNIDADE'
-                    : 'COMUNIDADE HORIZONTE'}
+                    : 'COMUNIDADE KOINONIA'}
               </T>
               <T accessibilityRole="header" className="page-title">
                 {page === 'home'
                   ? user
                     ? `Olá, ${user.name.split(' ')[0]}.`
-                    : 'Bem-vindo à Comunidade Horizonte.'
+                    : `Bem-vindo à ${COMMUNITY.name}.`
                   : titles[page]}
                 {page === 'home' && (
                   <span className="hello-sun">
@@ -675,9 +691,9 @@ export default function App() {
                       <T className="notice-body">{n.body}</T>
                       <Box className="row notice-author">
                         <Box className="mini-avatar">
-                          <Sun size={16} />
+                          <Flame size={16} />
                         </Box>
-                        <T className="tiny muted">Equipe Comunidade Horizonte</T>
+                        <T className="tiny muted">Equipe {COMMUNITY.name}</T>
                       </Box>
                     </Box>
                   ))}
@@ -742,9 +758,9 @@ export default function App() {
           )}
           <footer className="footer">
             <T>
-              ComunIA <span>·</span> Portal da Comunidade Horizonte.
+              ComunIA <span>·</span> Portal da {COMMUNITY.name}.
             </T>
-            <T>Comunidade fictícia · Versão 1.0</T>
+            <T>Agenda administrada pela comunidade · Versão 1.0</T>
           </footer>
         </main>
       </Box>
@@ -836,7 +852,7 @@ function Login({ onLogin, onBack }: { onLogin: (u: User) => void; onBack: () => 
         <Box className="login-copy">
           <T className="eyebrow">BEM-VINDO À COMUNIDADE</T>
           <T className="login-headline">
-            Comunidade Horizonte.
+            {COMMUNITY.name}.
             <br />
             Agenda e atendimento.
           </T>
@@ -849,7 +865,7 @@ function Login({ onLogin, onBack }: { onLogin: (u: User) => void; onBack: () => 
             <Art hero />
             <Box className="login-art-label">
               <Heart size={21} />
-              <T>Comunidade Horizonte</T>
+              <T>{COMMUNITY.name}</T>
             </Box>
           </Box>
         </Box>
@@ -973,9 +989,15 @@ function HomePage({
             A semana <br />
             começa por aqui.
           </h2>
-          <p>
-            Encontros, avisos e tudo o que você precisa para participar da Comunidade Horizonte.
-          </p>
+          <p>Encontros, avisos e tudo o que você precisa para participar da {COMMUNITY.name}.</p>
+          <div className="brief-community-meta">
+            <span>
+              <MapPin size={14} /> Taguatinga, DF
+            </span>
+            <a href={COMMUNITY.instagramUrl} target="_blank" rel="noreferrer">
+              <Instagram size={14} /> @{COMMUNITY.instagram}
+            </a>
+          </div>
           <Button variant="secondary" onClick={() => go('events')}>
             Ver agenda completa <ArrowRight size={17} />
           </Button>
@@ -1877,9 +1899,7 @@ function AdminPage({
     <>
       <Box className="admin-demo">
         <ShieldCheck size={19} />
-        <T>
-          Gestão da Comunidade Horizonte. Valores financeiros são exclusivamente de demonstração.
-        </T>
+        <T>Gestão da {COMMUNITY.name}. Valores financeiros são exclusivamente de demonstração.</T>
       </Box>
       {error && <T className="form-error">{error}</T>}
       <Box className="admin-stats">

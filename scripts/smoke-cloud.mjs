@@ -71,6 +71,8 @@ try {
   assert.ok(publicEvents.length > 0);
   assert.ok(publicEvents.every((event) => event.published));
   assert.ok(request('/api/public/notices').data.length > 0);
+  const publicLocation = request('/api/public/chat', 'POST', { message: 'Como chegar?' }).data;
+  assert.match(publicLocation.answer, /QNL 19/i);
   assert.equal(
     request('/api/public/chat', 'POST', { message: 'Meus ingressos' }).data.intent,
     'auth',
