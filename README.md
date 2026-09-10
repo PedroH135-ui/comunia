@@ -23,7 +23,7 @@ npm.cmd run dev
 - Interface em desenvolvimento: http://127.0.0.1:5173
 - API: http://127.0.0.1:3001/api/health
 - Membro: **membro@comunia.local**
-- Administrador: login **admin**, senha **admin** (local e online).
+- Administrador local: login **admin**, senha **admin**. A credencial online é forte, exclusiva e fica somente em `.local/ACESSOS-ONLINE.md`.
 - Senha do membro local: **Comunia@123**.
 
 Escolha uma conta na tela de login e clique em Entrar. Também é possível cadastrar novos membros. Para encerrar o aplicativo em desenvolvimento, use Ctrl+C no terminal. O PostgreSQL continua disponível; `npm.cmd run db:stop` encerra apenas a instância do ComunIA.

@@ -1,0 +1,53 @@
+name: Qualidade e segurança
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: comunia
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d comunia"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/comunia
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Instalar dependências reproduzíveis
+        run: npm ci
+      - name: Bloquear vulnerabilidades de produção
+        run: npm audit --omit=dev --audit-level=high
+      - name: Preparar banco efêmero
+        run: npm run db:migrate && npm run db:generate && npm run seed
+      - name: Executar testes
+        run: npm test
+      - name: Compilar a aplicação
+        run: npm run build

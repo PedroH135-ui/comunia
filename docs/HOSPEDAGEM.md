@@ -14,7 +14,7 @@
 
 Em 08/09/2026 foi feita uma cópia transacional dos dados locais para um banco Neon vazio. Foram preservados usuários, eventos, inscrições, pagamentos simulados, avisos, notificações, conhecimento, mensagens e atendimentos. Sessões de login e limites temporários não foram copiados.
 
-Na primeira publicação, as senhas das duas contas de demonstração foram substituídas por senhas aleatórias somente na nuvem. Posteriormente, por solicitação do usuário, o administrador passou a aceitar login **admin** e senha **admin**, localmente e online. O e-mail original também continua válido. O cadastro de novos membros continua exigindo e-mail e senha de pelo menos oito caracteres. Os acessos estão em `.local/ACESSOS-ONLINE.md`, excluído do deploy e do Git. A interface online não preenche automaticamente credenciais.
+As contas online usam senhas aleatórias diferentes das credenciais locais. Em 09/09/2026, a credencial administrativa online foi renovada e todas as sessões administrativas anteriores foram revogadas. O login curto **admin** e a senha **admin** existem somente no banco local de demonstração. O e-mail original também continua válido. O cadastro de novos membros exige e-mail e senha de pelo menos oito caracteres. Os acessos online ficam em `.local/ACESSOS-ONLINE.md`, excluído do deploy e do Git. A interface online não preenche automaticamente credenciais.
 
 O banco local em `E:/ComunIA/postgres-data` foi preservado. Depois da migração, alterações locais e online são independentes; não existe sincronização automática.
 
