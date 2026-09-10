@@ -747,6 +747,7 @@ export default function App() {
               )}
               {page === 'admin' && user?.role === 'admin' && (
                 <AdminPage
+                  currentUser={user}
                   events={events}
                   notices={notices}
                   modal={setModal}
@@ -1856,12 +1857,14 @@ function ChatPage({ user, requireLogin }: { user: User | null; requireLogin: () 
 }
 
 function AdminPage({
+  currentUser,
   events,
   notices,
   modal,
   refresh,
   notify,
 }: {
+  currentUser: User;
   events: Event[];
   notices: Notice[];
   modal: (n: ReactNode) => void;
@@ -1871,7 +1874,9 @@ function AdminPage({
   const [tab, setTab] = useState('events'),
     [overview, setOverview] = useState<Overview | null>(null),
     [knowledge, setKnowledge] = useState<Knowledge[]>([]),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [roleDrafts, setRoleDrafts] = useState<Record<number, User['role']>>({}),
+    [roleSaving, setRoleSaving] = useState<number | null>(null);
   const load = async () => {
     try {
       const [o, k] = await Promise.all([
@@ -1880,6 +1885,7 @@ function AdminPage({
       ]);
       setOverview(o);
       setKnowledge(k);
+      setRoleDrafts(Object.fromEntries(o.users.map((account) => [account.id, account.role])));
       setError('');
     } catch (e) {
       setError((e as Error).message);
@@ -1895,6 +1901,26 @@ function AdminPage({
   };
   const edit = (event?: Event) =>
     modal(<EventForm event={event} close={() => modal(null)} saved={saved} />);
+  const updateRole = async (account: User) => {
+    const role = roleDrafts[account.id] ?? account.role;
+    if (role === account.role) return;
+    setRoleSaving(account.id);
+    try {
+      await api(`/admin/users/${account.id}/role`, {
+        method: 'PUT',
+        body: JSON.stringify({ role }),
+      });
+      await load();
+      notify(
+        `${account.name} agora tem o perfil ${role === 'admin' ? 'Administrador' : 'Membro'}.`,
+      );
+    } catch (e) {
+      setRoleDrafts((drafts) => ({ ...drafts, [account.id]: account.role }));
+      notify((e as Error).message);
+    } finally {
+      setRoleSaving(null);
+    }
+  };
   return (
     <>
       <Box className="admin-demo">
@@ -2162,30 +2188,86 @@ function AdminPage({
           )}
           {tab === 'users' && (
             <Box className="panel admin-panel">
-              <T className="section-title">Pessoas da comunidade</T>
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>NOME</th>
-                      <th>E-MAIL</th>
-                      <th>PERFIL</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {overview?.users.map((u) => (
-                      <tr key={u.id}>
-                        <td>{u.name}</td>
-                        <td>{u.email}</td>
-                        <td>
-                          <Badge kind={u.role === 'admin' ? 'amber' : 'green'}>
-                            {u.role === 'admin' ? 'Administrador' : 'Membro'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <Box className="section-heading user-section-heading">
+                <Box>
+                  <T className="section-title">Pessoas e acessos</T>
+                  <T className="body muted">
+                    Escolha quem participa como membro e quem pode administrar a comunidade.
+                  </T>
+                </Box>
+                <Badge kind="outline">
+                  {overview?.users.filter((account) => account.role === 'admin').length ?? 0}{' '}
+                  administradores
+                </Badge>
+              </Box>
+              <div className="user-management-list">
+                {overview?.users.map((account) => {
+                  const selectedRole = roleDrafts[account.id] ?? account.role;
+                  const isCurrentUser = account.id === currentUser.id;
+                  const changed = selectedRole !== account.role;
+                  return (
+                    <div className="user-management-row" key={account.id}>
+                      <div className="user-management-identity">
+                        <div className="user-management-avatar">
+                          {account.name
+                            .split(' ')
+                            .slice(0, 2)
+                            .map((part) => part[0])
+                            .join('')
+                            .toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="user-management-name">
+                            {account.name}
+                            {isCurrentUser && <span>Você</span>}
+                          </div>
+                          <div className="user-management-email">{account.email}</div>
+                        </div>
+                      </div>
+                      <div className="user-role-field">
+                        <label htmlFor={`role-${account.id}`}>PERFIL DE ACESSO</label>
+                        <select
+                          id={`role-${account.id}`}
+                          value={selectedRole}
+                          disabled={isCurrentUser || roleSaving === account.id}
+                          onChange={(event) =>
+                            setRoleDrafts((drafts) => ({
+                              ...drafts,
+                              [account.id]: event.target.value as User['role'],
+                            }))
+                          }
+                        >
+                          <option value="member">Membro</option>
+                          <option value="admin">Administrador</option>
+                        </select>
+                        <span>
+                          {isCurrentUser
+                            ? 'Sua conta é protegida nesta sessão.'
+                            : selectedRole === 'admin'
+                              ? 'Pode gerenciar eventos, pessoas e conteúdos.'
+                              : 'Pode participar de eventos e usar o atendimento.'}
+                        </span>
+                      </div>
+                      <Button
+                        variant="secondary user-role-save"
+                        disabled={!changed || isCurrentUser || roleSaving === account.id}
+                        onClick={() => updateRole(account)}
+                      >
+                        {roleSaving === account.id ? (
+                          <LoaderCircle className="spin" size={16} />
+                        ) : changed ? (
+                          <>
+                            <Check size={16} /> Salvar perfil
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 size={16} /> Atualizado
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </Box>
           )}

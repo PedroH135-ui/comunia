@@ -96,19 +96,41 @@ try {
   assert.ok(request('/api/admin/overview').data);
   request('/api/auth/logout', 'POST');
   cookie = '';
+  const fixtureEmail = `qa-${randomUUID()}@comunia.local`;
+  const fixturePassword = randomUUID();
   const signup = request(
     '/api/auth/register',
     'POST',
     {
       name: 'Validação da hospedagem',
-      email: `qa-${randomUUID()}@comunia.local`,
-      password: randomUUID(),
+      email: fixtureEmail,
+      password: fixturePassword,
     },
     201,
   );
   fixtureId = signup.data.id;
   cookie = signup.session;
   request('/api/admin/overview', 'GET', undefined, 403);
+  request('/api/auth/logout', 'POST');
+  cookie = '';
+  cookie = request('/api/auth/login', 'POST', {
+    email: 'admin',
+    password: adminPassword,
+  }).session;
+  assert.equal(
+    request(`/api/admin/users/${fixtureId}/role`, 'PUT', { role: 'admin' }).data.role,
+    'admin',
+  );
+  assert.equal(
+    request(`/api/admin/users/${fixtureId}/role`, 'PUT', { role: 'member' }).data.role,
+    'member',
+  );
+  request('/api/auth/logout', 'POST');
+  cookie = '';
+  cookie = request('/api/auth/login', 'POST', {
+    email: fixtureEmail,
+    password: fixturePassword,
+  }).session;
   const events = request('/api/events').data;
   assert.ok(events.every((e) => e.published));
   const free = events.find(
