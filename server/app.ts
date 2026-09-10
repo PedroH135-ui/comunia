@@ -424,6 +424,51 @@ app.get('/api/admin/overview', async (_req, res) => {
     users: users.rows,
   });
 });
+app.put('/api/admin/users/:id/role', async (req, res) => {
+  const userId = id(req.params.id);
+  const { role } = z.object({ role: z.enum(['member', 'admin']) }).parse(req.body);
+  if (userId === req.user!.id && role !== req.user!.role)
+    throw fail('Peça a outro administrador para alterar o perfil da sua conta.', 409);
+  const c = await pool.connect();
+  try {
+    await c.query('BEGIN');
+    await c.query('SELECT pg_advisory_xact_lock(20260909)');
+    const current = (
+      await c.query('SELECT id,name,email,role,created_at FROM users WHERE id=$1 FOR UPDATE', [
+        userId,
+      ])
+    ).rows[0];
+    if (!current) throw fail('Pessoa não encontrada.', 404);
+    if (current.role === 'admin' && role === 'member') {
+      const administrators = (
+        await c.query("SELECT count(*)::int AS total FROM users WHERE role='admin'")
+      ).rows[0].total;
+      if (administrators <= 1)
+        throw fail('A comunidade precisa manter pelo menos um administrador.', 409);
+    }
+    const updated = (
+      await c.query(
+        'UPDATE users SET role=$1 WHERE id=$2 RETURNING id,name,email,role,created_at',
+        [role, userId],
+      )
+    ).rows[0];
+    if (current.role !== role)
+      await c.query('INSERT INTO notifications(user_id,title,body) VALUES($1,$2,$3)', [
+        userId,
+        'Seu perfil foi atualizado',
+        role === 'admin'
+          ? 'Você agora pode acessar o painel administrativo da comunidade.'
+          : 'Seu acesso foi atualizado para o perfil de membro da comunidade.',
+      ]);
+    await c.query('COMMIT');
+    res.json(updated);
+  } catch (error) {
+    await c.query('ROLLBACK');
+    throw error;
+  } finally {
+    c.release();
+  }
+});
 const eventSchema = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().min(10).max(4000),

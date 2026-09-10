@@ -1859,3 +1859,135 @@ body {
 :is(.local-indicator, [data-ui~='local-indicator']) > span:first-child {
   background: #3424d5;
 }
+
+/* Gerenciamento de perfis */
+:is(.user-section-heading, [data-ui~='user-section-heading']) {
+  align-items: flex-start;
+  padding-bottom: 18px;
+}
+:is(.user-section-heading, [data-ui~='user-section-heading']) :is(.body, [data-ui~='body']) {
+  margin-top: 6px;
+}
+.user-management-list {
+  border-top: 1px solid #e7e2db;
+}
+.user-management-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(265px, 1.2fr) 132px;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid #e7e2db;
+}
+.user-management-row:last-child {
+  border-bottom: 0;
+}
+.user-management-identity {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+.user-management-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #efedff;
+  color: #3424d5;
+  font-size: 12px;
+  font-weight: 700;
+}
+.user-management-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #26231f;
+  font-size: 13px;
+  font-weight: 650;
+}
+.user-management-name span {
+  border-radius: 999px;
+  background: #f1eee8;
+  color: #766f67;
+  padding: 3px 7px;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.user-management-email {
+  margin-top: 4px;
+  overflow: hidden;
+  color: #817c75;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-role-field {
+  display: grid;
+  gap: 5px;
+}
+.user-role-field label {
+  color: #8c857c;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 1.1px;
+}
+.user-role-field select {
+  width: 100%;
+  min-height: 40px;
+  appearance: auto;
+  border: 1px solid #d9d3ca;
+  border-radius: 6px;
+  background: #fffefa;
+  color: #292622;
+  padding: 8px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.user-role-field select:focus {
+  border-color: #6d61df;
+}
+.user-role-field select:disabled {
+  background: #f4f1eb;
+  color: #7e7870;
+  cursor: not-allowed;
+}
+.user-role-field span {
+  color: #8b857d;
+  font-size: 9px;
+  line-height: 1.45;
+}
+:is(.button, [data-ui~='button']):is(.user-role-save, [data-ui~='user-role-save']) {
+  width: 132px;
+  min-height: 40px;
+  justify-content: center;
+  padding: 9px 11px;
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .user-management-row {
+    grid-template-columns: minmax(190px, 1fr) minmax(220px, 1fr);
+  }
+  :is(.button, [data-ui~='button']):is(.user-role-save, [data-ui~='user-role-save']) {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 650px) {
+  .user-management-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 19px 0;
+  }
+  :is(.button, [data-ui~='button']):is(.user-role-save, [data-ui~='user-role-save']) {
+    grid-column: auto;
+    width: 100%;
+  }
+}

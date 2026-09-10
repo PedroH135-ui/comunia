@@ -154,6 +154,38 @@ test('Prisma mantém respostas HTTP para duplicidade e registros ausentes', asyn
   assert.equal(me.status, 200);
   assert.equal('password_hash' in me.data, false);
 });
+test('administrador escolhe o perfil das pessoas com proteções de acesso', async () => {
+  const userId = createdUsers[0];
+  assert.equal(
+    (await request(`/admin/users/${userId}/role`, 'PUT', { role: 'owner' }, adminCookie)).status,
+    400,
+  );
+  const promoted = await request(
+    `/admin/users/${userId}/role`,
+    'PUT',
+    { role: 'admin' },
+    adminCookie,
+  );
+  assert.equal(promoted.status, 200);
+  assert.equal(promoted.data.role, 'admin');
+  assert.equal((await request('/admin/overview', 'GET', undefined, memberCookie)).status, 200);
+  const selfDemotion = await request(
+    `/admin/users/${userId}/role`,
+    'PUT',
+    { role: 'member' },
+    memberCookie,
+  );
+  assert.equal(selfDemotion.status, 409);
+  const demoted = await request(
+    `/admin/users/${userId}/role`,
+    'PUT',
+    { role: 'member' },
+    adminCookie,
+  );
+  assert.equal(demoted.status, 200);
+  assert.equal(demoted.data.role, 'member');
+  assert.equal((await request('/admin/overview', 'GET', undefined, memberCookie)).status, 403);
+});
 test('evento, disputa de última vaga, pagamento, isolamento e cancelamento', async () => {
   const event = {
     title: 'QA isolado última vaga',
