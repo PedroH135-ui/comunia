@@ -61,8 +61,14 @@ const remote = dotenv.parse(readFileSync('.local/cloud.env'));
 const db = new pg.Client({ connectionString: remote.DATABASE_URL_UNPOOLED });
 try {
   await db.connect();
-  assert.equal(request('/api/health').data.status, 'ok');
-  const html = request('/').raw;
+  const health = request('/api/health');
+  assert.equal(health.data.status, 'ok');
+  assert.match(health.headers, /content-security-policy:/i);
+  assert.match(health.headers, /strict-transport-security:/i);
+  const page = request('/');
+  assert.match(page.headers, /x-frame-options:\s*DENY/i);
+  assert.match(page.headers, /content-security-policy:/i);
+  const html = page.raw;
   assert.ok(html.includes('<div id="root">'));
   const asset = html.match(/src="([^\"]+\.js)"/)?.[1];
   assert.ok(asset);

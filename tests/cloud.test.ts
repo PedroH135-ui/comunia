@@ -31,6 +31,15 @@ test('nuvem aceita apenas origens exatas e não libera localhost', async () => {
   assert.equal(blocked.status, 403);
 });
 
+test('respostas da nuvem aplicam cabeçalhos de segurança', async () => {
+  const response = await fetch(base + '/api/health');
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-frame-options'), 'DENY');
+  assert.match(response.headers.get('content-security-policy') || '', /frame-ancestors 'none'/);
+  assert.equal(response.headers.get('strict-transport-security'), 'max-age=31536000');
+  assert.equal(response.headers.get('cross-origin-opener-policy'), 'same-origin');
+});
+
 test('cookie de sessão publicado exige HTTPS e logout invalida a sessão', async () => {
   const response = await fetch(base + '/api/auth/login', {
     method: 'POST',
