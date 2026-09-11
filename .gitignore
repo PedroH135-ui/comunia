@@ -5,6 +5,7 @@ dist/
 *.log
 .local/
 .local-*/
+.thread-context/
 .vercel/
 .env.*
 !.env.example
