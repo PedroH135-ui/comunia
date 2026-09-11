@@ -22,6 +22,8 @@ O script `scripts/migrate-cloud.ts` recusa destinos já inicializados, usa uma t
 
 ## Atualizar a aplicação
 
+Só inicie este procedimento depois de uma autorização explícita do usuário para fazer o deploy.
+
 1. Execute `npm.cmd run build` e `npm.cmd test` contra o banco local.
 2. Se mudar o esquema, revise e aplique uma migração compatível antes de publicar. Nunca execute o seed de contas locais na nuvem.
 3. Execute `vercel.cmd deploy --prod --skip-domain`.
@@ -37,18 +39,19 @@ O deploy foi realizado pela CLI. Publicação automática por Git ainda não est
 - Origens de escrita restritas aos endereços exatos da implantação e produção. Se adicionar domínio próprio, configure `APP_ORIGINS=https://seu-dominio.com.br` e publique novamente.
 - Controle de login compartilhado no PostgreSQL, com expiração de 10 minutos, e limite também no cadastro.
 - Notificações online consultadas a cada 60 segundos apenas com a aba visível, para reduzir consumo.
+- As chaves privadas VAPID e as credenciais do WhatsApp ficam somente nas variáveis da Vercel. O navegador recebe apenas a chave VAPID pública.
 - `.env`, `.local`, backups, senhas e scripts de migração ficam fora do deploy.
 - `npm run db:migrate` aplica o histórico Prisma; `npm run db:cleanup` limpa sessões/limites expirados; confira sempre qual `DATABASE_URL` está configurada antes de executar.
 
 ## Custos e limites
 
-O banco foi provisionado no plano gratuito. Não foram contratados serviços de WhatsApp, IA generativa ou pagamentos. O uso deve permanecer nas cotas do plano e nas regras de uso pessoal não comercial do Vercel Hobby. Cotas não equivalem a garantia de disponibilidade ilimitada.
+O banco foi provisionado no plano gratuito. Não foram contratados serviços de IA generativa ou pagamentos. A integração usa a API oficial do WhatsApp e só será ativada depois que a conta Meta e suas condições de cobrança estiverem definidas. O uso deve permanecer nas cotas do plano e nas regras de uso pessoal não comercial do Vercel Hobby. Cotas não equivalem a garantia de disponibilidade ilimitada.
 
-A V1 continua sendo uma demonstração: pagamentos simulados, chatbot por base de conhecimento e notificações internas. Backup contínuo, recuperação de senha por e-mail e integrações externas não fazem parte desta publicação.
+A V1 continua sendo uma demonstração: pagamentos simulados e chatbot por base de conhecimento. Push e o webhook do WhatsApp estão implementados localmente, mas ainda não fazem parte da publicação atual. Backup contínuo e recuperação de senha por e-mail também não fazem parte desta publicação.
 
 Referências: [Vercel Functions](https://vercel.com/docs/functions/quickstart), [PostgreSQL e pooling](https://vercel.com/kb/guide/connection-pooling-with-functions), [Neon](https://vercel.com/marketplace/neon).
 
-## Publicação verificada
+## Última publicação verificada, anterior à integração
 
 - Endereço público: https://comunia-theta.vercel.app
 - Implantação: IMPLANTACAO_PRIVADA.

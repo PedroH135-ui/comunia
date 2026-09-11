@@ -29,3 +29,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## web-push
+
+Pacote de servidor usado para assinar e enviar notificações Web Push. Versão fixada em 3.6.7.
+
+Fonte: https://github.com/web-push-libs/web-push
+
+Licença: Mozilla Public License 2.0 — https://www.mozilla.org/MPL/2.0/

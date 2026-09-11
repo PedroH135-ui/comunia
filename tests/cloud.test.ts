@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 
@@ -13,7 +13,15 @@ const { allowedOrigins } = await import('../server/runtime.js');
 const server = app.listen(0, '127.0.0.1');
 await new Promise<void>((resolve) => server.on('listening', resolve));
 const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+const testRateKeys = [
+  createHash('sha256').update('/auth/login:127.0.0.1').digest('hex'),
+  createHash('sha256').update('login-account:admin@comunia.local').digest('hex'),
+];
+before(async () => {
+  await query('DELETE FROM auth_attempts WHERE key = ANY($1::text[])', [testRateKeys]);
+});
 after(async () => {
+  await query('DELETE FROM auth_attempts WHERE key = ANY($1::text[])', [testRateKeys]);
   await new Promise<void>((resolve) => server.close(() => resolve()));
   await disconnectDatabase();
 });

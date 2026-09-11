@@ -6,11 +6,25 @@ import { pool, query, prisma } from './db.js';
 import { hash, verify } from './security.js';
 import { cloud, secureCookies, allowedOrigins } from './runtime.js';
 import { consumeAttempt } from './rate-limit.js';
+import {
+  extractWhatsAppTextMessages,
+  sendWhatsAppText,
+  verifyWhatsAppSignature,
+  whatsappConfigured,
+} from './whatsapp.js';
+import { pushConfigured, pushPublicConfig, sendPushToUsers } from './push.js';
 
 export const app = express();
 app.disable('x-powered-by');
 if (cloud) app.set('trust proxy', 1);
-app.use(express.json({ limit: '64kb' }));
+app.use(
+  express.json({
+    limit: '64kb',
+    verify: (req, _res, buffer) => {
+      (req as Request).rawBody = Buffer.from(buffer);
+    },
+  }),
+);
 app.use(cookieParser());
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -38,6 +52,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
+      rawBody?: Buffer;
     }
   }
 }
@@ -248,6 +263,65 @@ app.post('/api/public/chat', async (req, res) => {
   const { message } = z.object({ message: z.string().trim().min(1).max(1000) }).parse(req.body);
   res.json(await answerChat(message));
 });
+
+app.get('/api/integrations/whatsapp/webhook', (req, res) => {
+  const query = z
+    .object({
+      'hub.mode': z.literal('subscribe'),
+      'hub.verify_token': z.string().min(1).max(500),
+      'hub.challenge': z.string().min(1).max(500),
+    })
+    .safeParse(req.query);
+  if (
+    !query.success ||
+    !process.env.WHATSAPP_VERIFY_TOKEN ||
+    query.data['hub.verify_token'] !== process.env.WHATSAPP_VERIFY_TOKEN
+  )
+    return res.status(403).send('Verificação recusada.');
+  res.type('text/plain').send(query.data['hub.challenge']);
+});
+
+app.post('/api/integrations/whatsapp/webhook', async (req, res) => {
+  if (!whatsappConfigured()) throw fail('Integração do WhatsApp indisponível.', 503);
+  if (!verifyWhatsAppSignature(req.rawBody, req.get('X-Hub-Signature-256')))
+    throw fail('Assinatura do webhook inválida.', 401);
+  const messages = extractWhatsAppTextMessages(req.body);
+  for (const message of messages) {
+    const previous = await prisma.whatsapp_events.findUnique({
+      where: { provider_id: message.id },
+    });
+    if (previous?.status === 'sent' || previous?.status === 'processing') continue;
+    try {
+      if (previous)
+        await prisma.whatsapp_events.update({
+          where: { provider_id: message.id },
+          data: { status: 'processing' },
+        });
+      else
+        await prisma.whatsapp_events.create({
+          data: { provider_id: message.id, status: 'processing' },
+        });
+    } catch (error: any) {
+      if (error?.code === 'P2002') continue;
+      throw error;
+    }
+    try {
+      const answer = await answerChat(message.text);
+      await sendWhatsAppText(message.from, answer.answer);
+      await prisma.whatsapp_events.update({
+        where: { provider_id: message.id },
+        data: { intent: answer.intent, status: 'sent' },
+      });
+    } catch (error) {
+      await prisma.whatsapp_events.update({
+        where: { provider_id: message.id },
+        data: { status: 'failed' },
+      });
+      throw error;
+    }
+  }
+  res.json({ received: true });
+});
 app.use('/api', auth);
 app.get('/api/events', async (req, res) => {
   const events = await prisma.events.findMany({
@@ -271,6 +345,50 @@ app.get('/api/notifications', async (req, res) =>
 );
 app.post('/api/notifications/read', async (req, res) => {
   await prisma.notifications.updateMany({ where: { user_id: req.user!.id }, data: { read: true } });
+  res.json({ ok: true });
+});
+const pushSubscriptionSchema = z.object({
+  endpoint: z
+    .string()
+    .url()
+    .max(2048)
+    .refine((value) => value.startsWith('https://'), 'Endpoint inválido.'),
+  keys: z.object({
+    p256dh: z.string().min(20).max(512),
+    auth: z.string().min(8).max(256),
+  }),
+});
+app.get('/api/push/config', (_req, res) => res.json(pushPublicConfig()));
+app.post('/api/push/subscriptions', async (req, res) => {
+  if (!pushConfigured()) throw fail('Notificações do dispositivo indisponíveis.', 503);
+  const subscription = pushSubscriptionSchema.parse(req.body);
+  const owner = await prisma.push_subscriptions.findUnique({
+    where: { endpoint: subscription.endpoint },
+    select: { user_id: true },
+  });
+  if (owner && owner.user_id !== req.user!.id)
+    throw fail('Esta assinatura já pertence a outra conta.', 409);
+  if (owner)
+    await prisma.push_subscriptions.update({
+      where: { endpoint: subscription.endpoint },
+      data: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
+    });
+  else
+    await prisma.push_subscriptions.create({
+      data: {
+        user_id: req.user!.id,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+      },
+    });
+  res.status(201).json({ ok: true });
+});
+app.delete('/api/push/subscriptions', async (req, res) => {
+  const { endpoint } = pushSubscriptionSchema.pick({ endpoint: true }).parse(req.body);
+  await prisma.push_subscriptions.deleteMany({
+    where: { endpoint, user_id: req.user!.id },
+  });
   res.json({ ok: true });
 });
 app.get('/api/registrations', async (req, res) => {
@@ -320,6 +438,12 @@ app.post('/api/events/:id/register', async (req, res) => {
       `${event.title}: ${status === 'pending' ? 'conclua o pagamento simulado em Minhas inscrições.' : 'sua presença está confirmada. Até lá!'}`,
     ]);
     await client.query('COMMIT');
+    await sendPushToUsers([req.user!.id], {
+      title: status === 'pending' ? 'Inscrição reservada' : 'Inscrição confirmada',
+      body: `${event.title}: ${status === 'pending' ? 'conclua o pagamento simulado.' : 'sua presença está confirmada.'}`,
+      url: '/?v=registrations',
+      tag: `registration-${registration.id}`,
+    });
     res.status(201).json(registration);
   } catch (e) {
     await client.query('ROLLBACK');
@@ -351,6 +475,12 @@ app.post('/api/registrations/:id/pay', async (req, res) => {
       `Sua inscrição ${r.ticket} foi confirmada. Nenhum valor real foi cobrado.`,
     ]);
     await client.query('COMMIT');
+    await sendPushToUsers([req.user!.id], {
+      title: 'Pagamento simulado aprovado',
+      body: 'Sua inscrição foi confirmada.',
+      url: '/?v=registrations',
+      tag: `payment-${r.id}`,
+    });
     res.json({ ok: true, simulated: true });
   } catch (e) {
     await client.query('ROLLBACK');
@@ -379,6 +509,12 @@ app.post('/api/registrations/:id/cancel', async (req, res) => {
       'A vaga foi liberada. Se houve pagamento de demonstração, o estorno também foi simulado.',
     ]);
     await client.query('COMMIT');
+    await sendPushToUsers([req.user!.id], {
+      title: 'Inscrição cancelada',
+      body: 'A vaga foi liberada.',
+      url: '/?v=registrations',
+      tag: `cancel-${r.id}`,
+    });
     res.json({ ok: true });
   } catch (e) {
     await client.query('ROLLBACK');
@@ -410,6 +546,15 @@ app.post('/api/chat', async (req, res) => {
   res.json({ answer, intent });
 });
 app.use('/api/admin', admin);
+app.get('/api/admin/integrations', (_req, res) =>
+  res.json({
+    whatsapp: {
+      configured: whatsappConfigured(),
+      webhookPath: '/api/integrations/whatsapp/webhook',
+    },
+    push: { configured: pushConfigured() },
+  }),
+);
 app.get('/api/admin/overview', async (_req, res) => {
   const [stats, registrations, support, messages, users] = await Promise.all([
     query(
@@ -506,6 +651,13 @@ app.post('/api/admin/events', async (req, res) => {
         `${e.title} está na agenda. Confira e participe!`,
       ]);
     await c.query('COMMIT');
+    if (e.published)
+      await sendPushToUsers(undefined, {
+        title: 'Novo evento na comunidade',
+        body: `${e.title} está na agenda. Confira e participe!`,
+        url: '/?v=events',
+        tag: `event-${result.rows[0].id}`,
+      });
     res.status(201).json(result.rows[0]);
   } catch (err) {
     await c.query('ROLLBACK');
@@ -550,6 +702,22 @@ app.put('/api/admin/events/:id', async (req, res) => {
         ],
       );
     await c.query('COMMIT');
+    const targetUsers =
+      e.published && !previous.published
+        ? undefined
+        : (
+            await query(
+              "SELECT user_id FROM registrations WHERE event_id=$1 AND status<>'cancelled'",
+              [id(req.params.id)],
+            )
+          ).rows.map((row) => row.user_id as number);
+    await sendPushToUsers(targetUsers, {
+      title:
+        e.published && !previous.published ? 'Novo evento na comunidade' : 'Atualização de evento',
+      body: `${e.title} teve informações atualizadas.`,
+      url: '/?v=events',
+      tag: `event-${id(req.params.id)}`,
+    });
     res.json(result.rows[0]);
   } catch (err) {
     await c.query('ROLLBACK');
@@ -596,6 +764,12 @@ app.post('/api/admin/notices', async (req, res) => {
       n.body,
     ]);
     await c.query('COMMIT');
+    await sendPushToUsers(undefined, {
+      title: n.title,
+      body: n.body,
+      url: '/?v=notices',
+      tag: 'community-notice',
+    });
     res.status(201).json({ ok: true });
   } catch (err) {
     await c.query('ROLLBACK');

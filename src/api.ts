@@ -54,6 +54,10 @@ export type Overview = {
   messages: (Message & { name: string })[];
   users: User[];
 };
+export type IntegrationStatus = {
+  whatsapp: { configured: boolean; webhookPath: string };
+  push: { configured: boolean };
+};
 export async function api<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch('/api' + path, {
     ...options,
