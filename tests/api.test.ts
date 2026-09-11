@@ -1,5 +1,6 @@
 import { test, after, before } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash, createHmac } from 'node:crypto';
 import { app } from '../server/app.js';
 import { disconnectDatabase, query } from '../server/db.js';
 const server = app.listen(0, '127.0.0.1');
@@ -8,10 +9,17 @@ const address = await new Promise<string>((resolve) =>
 );
 const createdUsers: number[] = [],
   createdEvents: number[] = [],
-  createdKnowledge: number[] = [];
+  createdKnowledge: number[] = [],
+  createdWhatsAppEvents: string[] = [];
 let adminCookie = '',
   memberCookie = '',
   otherCookie = '';
+const testRateKeys = [
+  createHash('sha256').update('/auth/login:127.0.0.1').digest('hex'),
+  createHash('sha256').update('/auth/register:127.0.0.1').digest('hex'),
+  createHash('sha256').update('login-account:admin@comunia.local').digest('hex'),
+  createHash('sha256').update('public-chat:127.0.0.1').digest('hex'),
+];
 async function request(path: string, method = 'GET', body?: unknown, cookie = '') {
   const response = await fetch(address + path, {
     method,
@@ -24,7 +32,11 @@ async function request(path: string, method = 'GET', body?: unknown, cookie = ''
     cookie: response.headers.get('set-cookie')?.split(';')[0] || '',
   };
 }
+async function rawRequest(path: string, options: RequestInit = {}) {
+  return fetch(address + path, options);
+}
 before(async () => {
+  await query('DELETE FROM auth_attempts WHERE key = ANY($1::text[])', [testRateKeys]);
   const login = await request('/auth/login', 'POST', {
     email: 'admin',
     password: 'admin',
@@ -58,7 +70,10 @@ after(async () => {
   }
   for (const eid of createdEvents) await query('DELETE FROM events WHERE id=$1', [eid]);
   for (const kid of createdKnowledge) await query('DELETE FROM knowledge WHERE id=$1', [kid]);
+  for (const providerId of createdWhatsAppEvents)
+    await query('DELETE FROM whatsapp_events WHERE provider_id=$1', [providerId]);
   await query("DELETE FROM notifications WHERE body LIKE 'QA isolado %'");
+  await query('DELETE FROM auth_attempts WHERE key = ANY($1::text[])', [testRateKeys]);
   if (adminCookie) await request('/auth/logout', 'POST', {}, adminCookie);
   await new Promise<void>((resolve) => server.close(() => resolve()));
   await disconnectDatabase();
@@ -66,6 +81,12 @@ after(async () => {
 test('autenticação e permissões protegem dados e administração', async () => {
   assert.equal((await request('/events')).status, 401);
   assert.equal((await request('/admin/overview', 'GET', undefined, memberCookie)).status, 403);
+  assert.equal((await request('/admin/integrations')).status, 401);
+  assert.equal((await request('/admin/integrations', 'GET', undefined, memberCookie)).status, 403);
+  const integrations = await request('/admin/integrations', 'GET', undefined, adminCookie);
+  assert.equal(integrations.status, 200);
+  assert.equal(typeof integrations.data.push.configured, 'boolean');
+  assert.equal(typeof integrations.data.whatsapp.configured, 'boolean');
   assert.equal(
     (await request('/auth/login', 'POST', { email: 'admin@comunia.local', password: 'errada123' }))
       .status,
@@ -96,6 +117,148 @@ test('visitante consulta página pública e assistente sem criar sessão', async
   assert.equal(privateAnswer.data.intent, 'auth');
   assert.match(privateAnswer.data.answer, /entre na sua conta/i);
   assert.equal((await request('/chat')).status, 401);
+});
+
+test('webhook do WhatsApp exige assinatura e não revela dados privados', async () => {
+  const previous = {
+    token: process.env.WHATSAPP_ACCESS_TOKEN,
+    phone: process.env.WHATSAPP_PHONE_NUMBER_ID,
+    verify: process.env.WHATSAPP_VERIFY_TOKEN,
+    secret: process.env.WHATSAPP_APP_SECRET,
+  };
+  process.env.WHATSAPP_ACCESS_TOKEN = 'token-de-teste';
+  process.env.WHATSAPP_PHONE_NUMBER_ID = '123456789';
+  process.env.WHATSAPP_VERIFY_TOKEN = 'verificacao-de-teste';
+  process.env.WHATSAPP_APP_SECRET = 'segredo-de-teste';
+  const providerId = `wamid.qa.${Date.now()}`;
+  createdWhatsAppEvents.push(providerId);
+  const payload = {
+    object: 'whatsapp_business_account',
+    entry: [
+      {
+        changes: [
+          {
+            value: {
+              messages: [
+                {
+                  id: providerId,
+                  from: '5511999999999',
+                  type: 'text',
+                  text: { body: 'Meus ingressos' },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  };
+  const body = JSON.stringify(payload);
+  const signature = `sha256=${createHmac('sha256', process.env.WHATSAPP_APP_SECRET).update(body).digest('hex')}`;
+  const originalFetch = globalThis.fetch;
+  let graphRequest: any = null;
+  globalThis.fetch = async (input, init) => {
+    if (String(input).startsWith('https://graph.facebook.com/')) {
+      graphRequest = JSON.parse(String(init?.body));
+      return new Response(JSON.stringify({ messages: [{ id: 'wamid.reply' }] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return originalFetch(input, init);
+  };
+  try {
+    const verification = await rawRequest(
+      '/integrations/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=verificacao-de-teste&hub.challenge=12345',
+    );
+    assert.equal(verification.status, 200);
+    assert.equal(await verification.text(), '12345');
+    assert.equal(
+      (
+        await rawRequest('/integrations/whatsapp/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Hub-Signature-256': 'sha256=errada' },
+          body,
+        })
+      ).status,
+      401,
+    );
+    const accepted = await rawRequest('/integrations/whatsapp/webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Hub-Signature-256': signature },
+      body,
+    });
+    assert.equal(accepted.status, 200);
+    assert.equal(graphRequest.to, '5511999999999');
+    assert.match(graphRequest.text.body, /entre na sua conta/i);
+    const stored = (
+      await query('SELECT provider_id,intent,status FROM whatsapp_events WHERE provider_id=$1', [
+        providerId,
+      ])
+    ).rows[0];
+    assert.deepEqual(stored, { provider_id: providerId, intent: 'auth', status: 'sent' });
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [key, value] of Object.entries({
+      WHATSAPP_ACCESS_TOKEN: previous.token,
+      WHATSAPP_PHONE_NUMBER_ID: previous.phone,
+      WHATSAPP_VERIFY_TOKEN: previous.verify,
+      WHATSAPP_APP_SECRET: previous.secret,
+    })) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
+test('push é opt-in, autenticado e cada membro controla apenas seu dispositivo', async () => {
+  assert.equal((await request('/push/config')).status, 401);
+  const config = await request('/push/config', 'GET', undefined, memberCookie);
+  assert.equal(config.status, 200);
+  assert.equal(config.data.enabled, true);
+  assert.ok(config.data.publicKey);
+  const subscription = {
+    endpoint: `https://push.example.test/${Date.now()}`,
+    keys: { p256dh: 'p'.repeat(80), auth: 'a'.repeat(24) },
+  };
+  assert.equal(
+    (await request('/push/subscriptions', 'POST', subscription, memberCookie)).status,
+    201,
+  );
+  assert.equal(
+    (await request('/push/subscriptions', 'POST', subscription, otherCookie)).status,
+    409,
+  );
+  assert.equal(
+    (
+      await request(
+        '/push/subscriptions',
+        'DELETE',
+        { endpoint: subscription.endpoint },
+        otherCookie,
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await query('SELECT count(*)::int AS n FROM push_subscriptions WHERE endpoint=$1', [
+        subscription.endpoint,
+      ])
+    ).rows[0].n,
+    1,
+  );
+  assert.equal(
+    (
+      await request(
+        '/push/subscriptions',
+        'DELETE',
+        { endpoint: subscription.endpoint },
+        memberCookie,
+      )
+    ).status,
+    200,
+  );
 });
 
 test('admin aceita usuário curto sem enfraquecer a validação de novos cadastros', async () => {

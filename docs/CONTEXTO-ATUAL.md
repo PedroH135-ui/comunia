@@ -4,7 +4,7 @@ Atualizado em 10/09/2026, America/Sao_Paulo.
 
 ## Objetivo atual
 
-Construir e evoluir o portal da Comunidade Koinonia com segurança como prioridade. O usuário quer que o contexto necessário do projeto seja salvo automaticamente em intervalos regulares, sempre compactado para este arquivo não crescer continuamente.
+Finalizar o ComunIA como protótipo funcional para entrega e apresentação do TCC. A etapa atual conecta o chatbot ao WhatsApp Cloud API e adiciona notificações push; a avaliação de um SLM vem depois. Segurança avançada, como MFA, auditoria administrativa e recuperação de senha, continua planejada após a entrega.
 
 ## Decisões confirmadas
 
@@ -13,6 +13,9 @@ Construir e evoluir o portal da Comunidade Koinonia com segurança como priorida
 - Hospedagem na Vercel com banco Neon; ambiente local na porta 3001.
 - Repositório GitHub privado. Segredos, dados pessoais e credenciais ficam fora do Git e deste checkpoint.
 - Administradores podem mudar perfis de membros; a própria conta e o último administrador são protegidos.
+- O WhatsApp responde somente dados públicos e não associa telefone a usuário nesta etapa.
+- Push depende de consentimento explícito no dispositivo e cada assinatura pertence a uma conta autenticada.
+- Deploy, promoção de domínio e alterações das variáveis da Vercel só podem ocorrer após uma mensagem explícita do usuário autorizando o deploy.
 
 ## Concluído e verificado
 
@@ -24,6 +27,7 @@ Construir e evoluir o portal da Comunidade Koinonia com segurança como priorida
 - Dependabot e workflow “Qualidade e segurança” ativos. O workflow executa instalação reproduzível, auditoria de produção, banco temporário, testes e build.
 - Última validação da aplicação: build aprovado, 12 testes aprovados, auditoria de produção sem vulnerabilidades conhecidas e smoke test da nuvem com 28 requisições.
 - Commit `aa7f761` criou a primeira versão da skill de continuidade. Ela está sendo corrigida nesta etapa para usar um checkpoint compacto periódico.
+- Webhook assinado do WhatsApp, armazenamento mínimo para idempotência, push opt-in e painel de integrações foram implementados localmente. Build, 14 testes e auditoria de produção passaram; a revisão visual local também foi concluída.
 
 ## Continuidade automática
 
@@ -33,11 +37,12 @@ Construir e evoluir o portal da Comunidade Koinonia com segurança como priorida
 
 ## Próximos passos recomendados
 
-- Autenticação multifator e recuperação segura de senha.
-- Trilha de auditoria administrativa, retenção e exclusão de dados conforme LGPD.
-- Backup com restauração testada e monitoramento de incidentes.
-- Divisão gradual de `src/App.tsx` e `server/app.ts` e regras de lint para fronteiras de autenticação.
-- Revisar atualização oficial das ações do GitHub que ainda emitem aviso sobre runtime Node.js antigo.
+- Obter as credenciais da conta Meta da comunidade e ativar o webhook do WhatsApp no deploy.
+- Avaliar um SLM somente depois de medir as perguntas que a base atual não responde bem.
+- Revisar textos e documentação para eliminar contradições sobre funcionalidades já implementadas.
+- Executar teste de usabilidade com participantes, registrar evidências e resultados e preparar roteiro de demonstração e contingência.
+- Documentar arquitetura, banco, requisitos, testes, segurança atual, limitações e trabalhos futuros.
+- Depois da entrega: MFA, recuperação de senha, auditoria administrativa, LGPD operacional, backup testado, monitoramento, lint arquitetural e refatoração gradual.
 
 ## Referências
 

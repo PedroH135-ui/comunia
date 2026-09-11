@@ -59,7 +59,9 @@ import {
   type Message,
   type Knowledge,
   type Overview,
+  type IntegrationStatus,
 } from './api';
+import { disablePush, enablePush, readPushState, type PushState } from './push';
 
 const COMMUNITY = {
   name: 'Comunidade Koinonia',
@@ -67,6 +69,62 @@ const COMMUNITY = {
   instagram: 'comunidadekoinonia',
   instagramUrl: 'https://www.instagram.com/comunidadekoinonia/',
 };
+
+function PushControls({ notify }: { notify: (message: string) => void }) {
+  const [state, setState] = useState<PushState>('loading');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void readPushState()
+      .then(setState)
+      .catch(() => setState('unavailable'));
+  }, []);
+  const change = async () => {
+    setBusy(true);
+    try {
+      const next = state === 'enabled' ? await disablePush() : await enablePush();
+      setState(next);
+      notify(
+        next === 'enabled'
+          ? 'Notificações ativadas neste dispositivo.'
+          : next === 'denied'
+            ? 'O navegador bloqueou as notificações. Altere a permissão nas configurações do site.'
+            : 'Notificações desativadas neste dispositivo.',
+      );
+    } catch (error) {
+      notify((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const blocked = ['unsupported', 'unavailable', 'denied'].includes(state);
+  const descriptions: Record<PushState, string> = {
+    loading: 'Verificando este dispositivo…',
+    unsupported: 'Este navegador não oferece notificações push.',
+    unavailable: 'As notificações ainda não foram configuradas pela administração.',
+    denied: 'A permissão está bloqueada nas configurações deste site.',
+    disabled: 'Receba avisos de eventos e inscrições mesmo com o portal fechado.',
+    enabled: 'Este dispositivo está recebendo novidades da comunidade.',
+  };
+  return (
+    <Box className="push-controls">
+      <Box className="notification-icon push-control-icon">
+        <Bell size={19} />
+      </Box>
+      <Box className="grow">
+        <T className="card-title">Avisos neste dispositivo</T>
+        <T className="body muted">{descriptions[state]}</T>
+      </Box>
+      <Button
+        variant={state === 'enabled' ? 'secondary' : 'primary'}
+        disabled={busy || blocked || state === 'loading'}
+        onClick={change}
+      >
+        {busy ? <LoaderCircle className="spin" size={16} /> : <Bell size={16} />}
+        {state === 'enabled' ? 'Desativar' : 'Ativar notificações'}
+      </Button>
+    </Box>
+  );
+}
 
 // Shared layout and input primitives use React Native for Web. CSS is the web presentation layer.
 const Box = ({
@@ -374,6 +432,7 @@ export default function App() {
   };
   const logout = async () => {
     try {
+      await disablePush().catch(() => undefined);
       await post('/auth/logout');
       setUser(null);
       setEvents([]);
@@ -702,6 +761,7 @@ export default function App() {
               {page === 'chat' && <ChatPage user={user} requireLogin={() => setShowLogin(true)} />}
               {page === 'notifications' && user && (
                 <Box className="panel notifications-panel">
+                  <PushControls notify={notify} />
                   <Box className="section-heading">
                     <T className="section-title">
                       Notificações <span className="count-pill">{unread}</span>
@@ -1874,17 +1934,20 @@ function AdminPage({
   const [tab, setTab] = useState('events'),
     [overview, setOverview] = useState<Overview | null>(null),
     [knowledge, setKnowledge] = useState<Knowledge[]>([]),
+    [integrations, setIntegrations] = useState<IntegrationStatus | null>(null),
     [error, setError] = useState(''),
     [roleDrafts, setRoleDrafts] = useState<Record<number, User['role']>>({}),
     [roleSaving, setRoleSaving] = useState<number | null>(null);
   const load = async () => {
     try {
-      const [o, k] = await Promise.all([
+      const [o, k, i] = await Promise.all([
         api<Overview>('/admin/overview'),
         api<Knowledge[]>('/admin/knowledge'),
+        api<IntegrationStatus>('/admin/integrations'),
       ]);
       setOverview(o);
       setKnowledge(k);
+      setIntegrations(i);
       setRoleDrafts(Object.fromEntries(o.users.map((account) => [account.id, account.role])));
       setError('');
     } catch (e) {
@@ -1964,6 +2027,7 @@ function AdminPage({
             ['support', `Atendimento (${overview?.stats.support ?? 0})`],
             ['users', 'Membros'],
             ['messages', 'Interações'],
+            ['integrations', 'Integrações'],
           ].map(([id, label]) => (
             <TabsTrigger key={id} value={id}>
               {label}
@@ -2043,6 +2107,48 @@ function AdminPage({
                   </tbody>
                 </table>
               </div>
+            </Box>
+          )}
+          {tab === 'integrations' && (
+            <Box className="panel admin-panel integrations-panel">
+              <Box>
+                <T className="section-title">Canais da comunidade</T>
+                <T className="body muted">
+                  Acompanhe a conexão dos canais sem expor tokens ou chaves de acesso.
+                </T>
+              </Box>
+              <Box className="integration-card">
+                <Box className="integration-mark whatsapp-mark">WA</Box>
+                <Box className="grow">
+                  <Box className="row">
+                    <T className="card-title">WhatsApp Cloud API</T>
+                    <Badge kind={integrations?.whatsapp.configured ? 'green' : 'amber'}>
+                      {integrations?.whatsapp.configured ? 'Conectado' : 'Aguardando Meta'}
+                    </Badge>
+                  </Box>
+                  <T className="body muted">
+                    Responde dúvidas públicas com a mesma base do assistente. Dados pessoais exigem
+                    login no portal.
+                  </T>
+                  <T className="tiny muted mono">{integrations?.whatsapp.webhookPath}</T>
+                </Box>
+              </Box>
+              <Box className="integration-card">
+                <Box className="integration-mark push-mark">
+                  <Bell size={20} />
+                </Box>
+                <Box className="grow">
+                  <Box className="row">
+                    <T className="card-title">Notificações push</T>
+                    <Badge kind={integrations?.push.configured ? 'green' : 'amber'}>
+                      {integrations?.push.configured ? 'Configurado' : 'Aguardando chaves'}
+                    </Badge>
+                  </Box>
+                  <T className="body muted">
+                    Cada membro decide se quer ativar avisos no próprio dispositivo.
+                  </T>
+                </Box>
+              </Box>
             </Box>
           )}
           {tab === 'registrations' && (

@@ -3209,3 +3209,55 @@ tr:last-child td {
     transition: none !important;
   }
 }
+
+:is(.push-controls, [data-ui~='push-controls']) {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 22px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft, #f7f8f6);
+}
+:is(.push-control-icon, [data-ui~='push-control-icon']) {
+  flex: 0 0 auto;
+}
+:is(.integrations-panel, [data-ui~='integrations-panel']) {
+  display: grid;
+  gap: 16px;
+}
+:is(.integration-card, [data-ui~='integration-card']) {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+:is(.integration-mark, [data-ui~='integration-mark']) {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  font-weight: 800;
+  font-size: 12px;
+}
+:is(.whatsapp-mark, [data-ui~='whatsapp-mark']) {
+  color: #075e54;
+  background: #dff7e9;
+}
+:is(.push-mark, [data-ui~='push-mark']) {
+  color: #4338ca;
+  background: #eeecff;
+}
+@media (max-width: 620px) {
+  :is(.push-controls, [data-ui~='push-controls']),
+  :is(.integration-card, [data-ui~='integration-card']) {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}

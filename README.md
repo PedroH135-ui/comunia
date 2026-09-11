@@ -39,8 +39,9 @@ Se o aplicativo já estiver aberto, apenas visite o endereço. Não é necessár
 - Inscrição gratuita com confirmação imediata; inscrição paga com reserva de vaga.
 - Pagamento **simulado**, ingresso com código, cancelamento e estorno **simulado**.
 - Controle transacional para impedir duas inscrições disputando a última vaga ou pagamentos duplicados.
-- Notificações **dentro do aplicativo** para novos eventos publicados, atualizações, avisos e inscrições; leitura e atualização a cada 15 segundos.
+- Notificações dentro do aplicativo e push opt-in para novos eventos, atualizações, avisos e inscrições; leitura e atualização a cada 15 segundos.
 - Chatbot público por intenções/FAQ; após o login, consulta inscrições, mantém histórico e encaminha pedidos à equipe.
+- Canal do chatbot preparado para a API oficial do WhatsApp, com webhook assinado, respostas públicas e nenhuma persistência de telefone ou conteúdo.
 - Administração: criar/editar eventos, publicar ou guardar rascunho, acompanhar inscrições e receita fictícia, cadastrar/editar conhecimento do chatbot, publicar avisos, consultar membros e interações e concluir pedidos de atendimento.
 
 ## Revisão visual e pesquisa
@@ -109,11 +110,11 @@ O build gera `dist/`. Depois dele, `npm.cmd start` serve a interface compilada e
 
 - **Celular:** a V1 é executada no navegador com React Native para Web. Ainda não é um APK/IPA. Os ícones, formulários administrativos, CSS, cookies e cliente HTTP têm adaptações web; uma versão Expo/Android/iOS exigirá adaptação e testes próprios.
 - **Pagamentos:** não há gateway nem cobrança. Precisamos escolher provedor e validar credenciais/webhooks antes de processar dinheiro real.
-- **Notificações:** caixa interna funcional. Push no celular, e-mail e WhatsApp ainda não estão integrados. Não há lembrete agendado antes do evento.
-- **WhatsApp:** não conectado nesta V1; a API oficial será uma integração posterior do mesmo backend.
+- **Notificações:** caixa interna e push web funcionais. Não há e-mail nem lembrete agendado antes do evento.
+- **WhatsApp:** backend e webhook implementados; a ativação do número depende das credenciais da conta Meta da comunidade. Consulte [docs/WHATSAPP-PUSH.md](docs/WHATSAPP-PUSH.md).
 - **IA:** sem LLM/RAG ou API paga; o chatbot usa detecção simples de intenções e palavras-chave. As respostas vêm da base cadastrada. Não é um modelo treinado.
 - **Reservas:** inscrições pendentes ocupam vaga até serem pagas ou canceladas; expiração automática fica para a integração com pagamentos.
-- **Administração:** lista membros, mas não altera perfis ou bloqueia contas nesta V1. Não há recuperação de senha, check-in por QR, anexos, múltiplas instituições ou reembolso real.
+- **Administração:** altera perfis com proteção do último administrador. Não há bloqueio de contas, recuperação de senha, check-in por QR, anexos, múltiplas instituições ou reembolso real.
 - **Hospedagem:** a demonstração está publicada na Vercel e usa PostgreSQL gerenciado pela Neon. O ambiente local continua isolado para desenvolvimento.
 - **Produção:** antes de usuários reais, configurar HTTPS/cookies seguros, segredos, backup, recuperação de conta, política de retenção, limites distribuídos de requisições e monitoramento.
 - As fontes tipográficas tentam carregar do Google Fonts; a interface funciona com fontes alternativas sem internet.
