@@ -1,6 +1,7 @@
 import { test, after, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, createHmac } from 'node:crypto';
+import webpush from 'web-push';
 import { app } from '../server/app.js';
 import { disconnectDatabase, query } from '../server/db.js';
 const server = app.listen(0, '127.0.0.1');
@@ -211,7 +212,24 @@ test('webhook do WhatsApp exige assinatura e não revela dados privados', async 
   }
 });
 
-test('push é opt-in, autenticado e cada membro controla apenas seu dispositivo', async () => {
+test('push é opt-in, autenticado e cada membro controla apenas seu dispositivo', async (t) => {
+  const previous = {
+    VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
+    VAPID_SUBJECT: process.env.VAPID_SUBJECT,
+  };
+  const keys = webpush.generateVAPIDKeys();
+  Object.assign(process.env, {
+    VAPID_PUBLIC_KEY: keys.publicKey,
+    VAPID_PRIVATE_KEY: keys.privateKey,
+    VAPID_SUBJECT: 'mailto:qa@example.test',
+  });
+  t.after(() => {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  });
   assert.equal((await request('/push/config')).status, 401);
   const config = await request('/push/config', 'GET', undefined, memberCookie);
   assert.equal(config.status, 200);
