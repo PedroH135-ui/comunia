@@ -43,8 +43,8 @@ jobs:
           cache: npm
       - name: Instalar dependências reproduzíveis
         run: npm ci
-      - name: Bloquear vulnerabilidades de produção
-        run: npm audit --omit=dev --audit-level=high
+      - name: Bloquear vulnerabilidades de dependências
+        run: npm audit --audit-level=moderate
       - name: Preparar banco efêmero
         run: npm run db:migrate && npm run db:generate && npm run seed
       - name: Executar testes

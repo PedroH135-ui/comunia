@@ -51,7 +51,7 @@ Para a CLI, `prisma.config.ts` prioriza `DATABASE_URL_UNPOOLED` quando disponív
 
 A migração foi aplicada a um banco temporário vazio, comparada com o datamodel e reaplicada sem mudanças pendentes. As sete constraints foram conferidas. Os testes de integração cobrem login, permissões, unicidade, registros ausentes, concorrência pela última vaga, pagamento/cancelamento, chatbot, cookies e limite distribuído.
 
-Nesta entrega passaram nove testes locais e 18 verificações HTTP na implantação da Vercel. Após a promoção, foram confirmados novamente o health, o login `admin` e a listagem de eventos no domínio público. A implantação com Prisma é `IMPLANTACAO_PRIVADA`, publicada em https://comunia-theta.vercel.app. As contas e dados temporários dos testes foram removidos.
+Nesta entrega passaram nove testes locais e 18 verificações HTTP na implantação da Vercel. Após a promoção, foram confirmados novamente o health, a autenticação administrativa e a listagem de eventos no domínio público. Os identificadores de implantação e as evidências operacionais ficam no painel privado do provedor. As contas e dados temporários dos testes foram removidos.
 
 Foram fixadas versões corrigidas das dependências transitivas `deepmerge-ts` e `mysql2` por overrides. A configuração Prisma, a geração do cliente e as migrações foram testadas com essas versões. A auditoria de dependências de produção não reportou vulnerabilidades nesta revisão; continuam os avisos já conhecidos da cadeia de desenvolvimento Metro.
 

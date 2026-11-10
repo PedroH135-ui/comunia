@@ -2,7 +2,7 @@
 
 ## Arquitetura
 
-- Projeto Vercel: `comunia`, na conta `VERCEL_SCOPE`.
+- Projeto Vercel: `comunia`; selecione a equipe no ambiente privado de administração.
 - Front-end: React Native Web/Vite, arquivos estáticos no CDN.
 - Backend: Express em `api/index.ts`, com rotas `/api/*` no mesmo domínio.
 - Região das funções: São Paulo (`gru1`). A compilação pode acontecer em outra região.
@@ -54,7 +54,7 @@ Referências: [Vercel Functions](https://vercel.com/docs/functions/quickstart), 
 ## Última publicação verificada, anterior à integração
 
 - Endereço público: https://comunia-theta.vercel.app
-- Implantação: IMPLANTACAO_PRIVADA.
+- Identificadores de implantação e evidências operacionais ficam no painel privado do provedor.
 - 7 testes locais passaram, incluindo concorrência de inscrições, limite distribuído e cookies seguros.
 - 21 requisições verificadas na implantação: arquivos da interface, conteúdo e assistente públicos, API, bloqueio de origem indevida, login, permissões, cadastro, inscrição, cancelamento, chatbot autenticado e logout.
 - Conta temporária de teste e registros associados removidos após a validação.

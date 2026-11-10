@@ -2,6 +2,15 @@ node_modules/
 server/generated/
 dist/
 .env
+*.dump
+*.bak
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
 *.log
 .local/
 .local-*/
