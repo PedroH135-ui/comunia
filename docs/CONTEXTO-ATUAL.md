@@ -34,7 +34,7 @@ Finalizar o ComunIA como protótipo funcional para entrega e apresentação do T
 - Secret scanning, proteção no push, alertas de dependências e correções de segurança do Dependabot ativados no GitHub.
 - Validação desta atualização: 14 testes de integração aprovados em PostgreSQL descartável, build aprovado e auditoria npm completa sem alertas. O teste de push gera chaves descartáveis próprias e não depende de credenciais pessoais.
 - Workflows adicionais verificam arquivos privados, segredos e endereços pessoais nos arquivos. Novos commits desta revisão usam o e-mail noreply do GitHub.
-- A remoção de e-mails dos commits antigos exige publicação de um histórico reescrito, com autorização específica.
+- O responsável autorizou em 10/11/2026 publicar as correções nas branches principais e reescrever o histórico para remover dados pessoais. Backups privados foram preservados antes da limpeza.
 
 ## Próximos passos recomendados
 
