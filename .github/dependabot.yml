@@ -1,3 +1,5 @@
+# Propostas gerais de versão ficam sob revisão manual.
+# O limite zero não desativa PRs de segurança, que possuem limite próprio no GitHub.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -7,9 +9,11 @@ updates:
       day: monday
       time: '09:00'
       timezone: America/Sao_Paulo
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     groups:
       production-dependencies:
+        applies-to: security-updates
         dependency-type: production
       development-dependencies:
+        applies-to: security-updates
         dependency-type: development

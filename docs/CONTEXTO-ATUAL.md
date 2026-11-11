@@ -1,6 +1,6 @@
 # Contexto atual do ComunIA
 
-Atualizado em 10/11/2026, America/Sao_Paulo.
+Atualizado em 11/11/2026, America/Sao_Paulo.
 
 ## Objetivo atual
 
@@ -35,6 +35,8 @@ Finalizar o ComunIA como protótipo funcional para entrega e apresentação do T
 - Validação desta atualização: 14 testes de integração aprovados em PostgreSQL descartável, build aprovado e auditoria npm completa sem alertas. O teste de push gera chaves descartáveis próprias e não depende de credenciais pessoais.
 - Workflows adicionais verificam arquivos privados, segredos e endereços pessoais nos arquivos. Novos commits desta revisão usam o e-mail noreply do GitHub.
 - O responsável autorizou em 10/11/2026 publicar as correções nas branches principais e reescrever o histórico para remover dados pessoais. Backups privados foram preservados antes da limpeza.
+- As branches públicas foram saneadas e verificadas em clones novos em 11/11/2026. Referências antigas de PRs e caches da plataforma exigem avaliação do suporte do GitHub.
+- Após a revisão dos PRs, as propostas automáticas gerais de versão ficam pausadas. Alertas e PRs de segurança continuam ativos; os grupos de produção/desenvolvimento agora se aplicam somente a correções de segurança. Migrações de versão são planejadas separadamente.
 
 ## Próximos passos recomendados
 
